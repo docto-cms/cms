@@ -1,0 +1,182 @@
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth.models import User
+from rest_framework.exceptions import ValidationError
+from django.contrib.auth.hashers import make_password
+from rest_framework.exceptions import NotFound
+import re
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.utils.translation import gettext_lazy as _
+from .models import *
+from django.contrib.auth.hashers import check_password
+
+
+class RegisterView(APIView):
+    """
+    API view for user registration.
+    """
+
+    def post(self, request, *args, **kwargs):
+
+        # Extract data from the request
+        first_name = request.data.get('first_name')
+        second_name = request.data.get('second_name')
+        clinic_id = request.data.get('clinic_id')
+        phone_number = request.data.get('phone_number')
+        email = request.data.get('email')
+        password = request.data.get('password')
+        confirm_password = request.data.get('confirm_password')
+
+        # {
+        #     "first_name":"aswin",
+        #     "second_name":"raj",
+        #     "clinic_id":1,
+        #     "phone_number":"9876543210",
+        #     "email":"aswinraj@gmail.com",
+        #     "password":"aswin2030@#",
+        #     "confirm_password":"aswin2030@#"
+        # }
+
+        # Validate input
+        if not password or not email or not first_name or not second_name or not clinic_id or not phone_number or not confirm_password:
+            raise ValidationError("All details are required fields.")
+
+        # Password validation (example rules: minimum 8 characters, must include a number and a special character)
+        if len(password) < 8 or not re.search(r'\d', password) or not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+            raise ValidationError(
+                "Password must be at least 8 characters long, include at least one number, and one special character."
+            )
+        
+        # mobile number validation
+        if len(phone_number)<10 or len(phone_number)>10:
+            raise ValidationError(
+                "Phone Number should be 10 digits"
+            )
+        
+        # checking confirm password
+        if password!=confirm_password:
+            raise ValidationError(
+                "The password and confirm password should be same"
+            )
+        
+        # Check if email or phone number or clinic id already exists
+        if User.objects.filter(email=email).exists():
+            return Response({"error": "Email already registered."}, status=status.HTTP_400_BAD_REQUEST)
+        if User.objects.filter(phone_number=phone_number).exists():
+            return Response({"error": "phone number already registered."}, status=status.HTTP_400_BAD_REQUEST)
+        if User.objects.filter(clinic_id=clinic_id).exists():
+            return Response({"error": "clinic id already registered."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create user
+        user = User.objects.create(
+            first_name=first_name,
+            second_name=second_name,
+            clinic_id=clinic_id,
+            phone_number=phone_number,
+            email=email,
+            password=make_password(password),  # Hash the password
+        )
+
+        # Return success response
+        return Response(
+            {
+                "id": user.id,
+                "name": user.first_name+user.second_name,
+                "email": user.email,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class RetrieveUserView(APIView):
+    """
+    API view to retrieve a registered user's details by their ID.
+    """
+
+    def get(self, request, user_id, *args, **kwargs):
+        try:
+            # Get user by ID
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            # Handle case where user is not found
+            raise NotFound("User not found.")
+
+        # Return user details
+        return Response(
+            {
+                "id": user.id,
+                "username": user.first_name+user.second_name,
+                "email": user.email,
+                "clinic Id":user.clinic_id, 
+            },
+            status=status.HTTP_200_OK,
+        )
+
+class LoginView(APIView):
+
+    """
+    API view for user login. It returns a JWT token upon successful authentication.
+    """
+
+    def post(self, request, *args, **kwargs):
+        email = request.data.get('email')
+        password = request.data.get('password')
+        clinic_id = request.data.get('clinic_id')
+
+
+        # Validate input
+        if not email or not password or not clinic_id:
+            raise ValidationError("email , password and clinic_id are required fields.")
+
+        # Authenticate user
+        try:
+            # Fetch user by username
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise AuthenticationFailed("Invalid username or password.")
+
+        # Manually hash and check the password
+        if not check_password(password, user.password):
+            raise AuthenticationFailed("Invalid username or password.")
+
+        # Create JWT token
+        refresh = RefreshToken.for_user(user)
+        access_token = refresh.access_token
+
+        # Return the tokens in response
+        return Response(
+            {
+                'user':user.first_name+user.second_name,
+                'refresh': str(refresh),
+                'access': str(access_token),
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+class LogoutView(APIView):
+    """
+    API view for user logout.
+    """
+
+    def post(self, request, *args, **kwargs):
+        # Extract the refresh token from the request
+        refresh_token = request.data.get('refresh_token')
+
+        if not refresh_token:
+            return Response({"error": _("Refresh token is required.")}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Blacklist the refresh token
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response({"message": _("Logged out successfully.")}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            # Log the error with traceback for debugging
+            import traceback
+            print(f"Logout error: {str(e)}") 
+            print(traceback.format_exc())
+            return Response({"error": _("Invalid or expired token.")}, status=status.HTTP_400_BAD_REQUEST)
