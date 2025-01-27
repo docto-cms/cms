@@ -29,15 +29,15 @@ class RegisterView(APIView):
         password = request.data.get('password')
         confirm_password = request.data.get('confirm_password')
 
-        # {
-        #     "first_name":"aswin",
-        #     "second_name":"raj",
-        #     "clinic_id":1,
-        #     "phone_number":"9876543210",
-        #     "email":"aswinraj@gmail.com",
-        #     "password":"aswin2030@#",
-        #     "confirm_password":"aswin2030@#"
-        # }
+# {
+#     "first_name":"aswin",
+#     "second_name":"raj",
+#     "clinic_id":1,
+#     "phone_number":"9876543210",
+#     "email":"aswinraj@gmail.com",
+#     "password":"aswin2030@#",
+#     "confirm_password":"aswin2030@#"
+# }
 
         # Validate input
         if not password or not email or not first_name or not second_name or not clinic_id or not phone_number or not confirm_password:
@@ -90,30 +90,6 @@ class RegisterView(APIView):
         )
 
 
-class RetrieveUserView(APIView):
-    """
-    API view to retrieve a registered user's details by their ID.
-    """
-
-    def get(self, request, user_id, *args, **kwargs):
-        try:
-            # Get user by ID
-            user = User.objects.get(id=user_id)
-        except User.DoesNotExist:
-            # Handle case where user is not found
-            raise NotFound("User not found.")
-
-        # Return user details
-        return Response(
-            {
-                "id": user.id,
-                "username": user.first_name+user.second_name,
-                "email": user.email,
-                "clinic Id":user.clinic_id, 
-            },
-            status=status.HTTP_200_OK,
-        )
-
 class LoginView(APIView):
 
     """
@@ -125,6 +101,11 @@ class LoginView(APIView):
         password = request.data.get('password')
         clinic_id = request.data.get('clinic_id')
 
+# {
+#     "clinic_id":1,
+#     "email":"aswinraj@gmail.com",
+#     "password":"aswin2030@#"
+# }
 
         # Validate input
         if not email or not password or not clinic_id:
@@ -132,7 +113,6 @@ class LoginView(APIView):
 
         # Authenticate user
         try:
-            # Fetch user by username
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             raise AuthenticationFailed("Invalid username or password.")
@@ -180,3 +160,40 @@ class LogoutView(APIView):
             print(f"Logout error: {str(e)}") 
             print(traceback.format_exc())
             return Response({"error": _("Invalid or expired token.")}, status=status.HTTP_400_BAD_REQUEST)
+
+class ChangePassword(APIView):
+
+    def put(self, request, *args, **kwargs):
+        email = request.data.get('email')
+        old_password=request.data.get("old_password")
+        new_password=request.data.get("new_password")
+        confirm_password = request.data.get('confirm_password')
+        user = User.objects.get(email=email)
+
+# {
+#     "email":"aswinraj@gmail.com",
+#     "old_password":"aswin2030@#",
+#     "new_password":"aswin20@#",
+#     "confirm_password":"aswin20@#"
+# }
+
+        if not email or not old_password or not new_password or not confirm_password:
+            raise ValidationError("email , password and clinic_id are required fields.")
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise AuthenticationFailed("User with this email does not exist.")
+
+        if not check_password(old_password, user.password):
+            raise AuthenticationFailed("old password is incorrect")
+
+        if check_password(new_password, user.password):
+            raise AuthenticationFailed("new pasword is same as old password")
+        
+        if new_password!=confirm_password:
+            raise ValidationError("new_password & confirm_password should be same ")
+
+        user.password=make_password(new_password)
+        user.save()
+        return Response({"detail": "Password successfully changed."}, status=status.HTTP_200_OK)
