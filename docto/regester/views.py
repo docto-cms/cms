@@ -29,16 +29,6 @@ class RegisterView(APIView):
         password = request.data.get('password')
         confirm_password = request.data.get('confirm_password')
 
-# {
-#     "first_name":"aswin",
-#     "second_name":"raj",
-#     "clinic_id":1,
-#     "phone_number":"9876543210",
-#     "email":"aswinraj@gmail.com",
-#     "password":"aswin2030@#",
-#     "confirm_password":"aswin2030@#"
-# }
-
         # Validate input
         if not password or not email or not first_name or not second_name or not clinic_id or not phone_number or not confirm_password:
             raise ValidationError("All details are required fields.")
@@ -100,12 +90,6 @@ class LoginView(APIView):
         email = request.data.get('email')
         password = request.data.get('password')
         clinic_id = request.data.get('clinic_id')
-
-# {
-#     "clinic_id":1,
-#     "email":"aswinraj@gmail.com",
-#     "password":"aswin2030@#"
-# }
 
         # Validate input
         if not email or not password or not clinic_id:
@@ -169,13 +153,6 @@ class ChangePassword(APIView):
         new_password=request.data.get("new_password")
         confirm_password = request.data.get('confirm_password')
         user = User.objects.get(email=email)
-
-# {
-#     "email":"aswinraj@gmail.com",
-#     "old_password":"aswin2030@#",
-#     "new_password":"aswin20@#",
-#     "confirm_password":"aswin20@#"
-# }
 
         if not email or not old_password or not new_password or not confirm_password:
             raise ValidationError("email , password and clinic_id are required fields.")
