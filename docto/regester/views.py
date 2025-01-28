@@ -173,5 +173,3 @@ class ChangePassword(APIView):
         user.password=make_password(new_password)
         user.save()
         return Response({"detail": "Password successfully changed."}, status=status.HTTP_200_OK)
-    
-    # after change
