@@ -59,6 +59,7 @@ class AppointmentMobileAPIView(APIView):
 
         try:
             appointment = PatientAppointment.objects.create(
+                RegistrationId=request.data.get("RegistrationId"),
                 first_name=request.data.get("first_name"),
                 last_name=request.data.get("last_name"),
                 mobile_number=request.data.get("mobile_number"),
