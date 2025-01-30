@@ -1,5 +1,5 @@
 from django.db import models
-
+from Patient.models import *
 
 class Doctor(models.Model):
     firstname = models.CharField(max_length=255)
@@ -31,16 +31,6 @@ class PatientAppointment(models.Model):
 
     def __str__(self):
         return f"{self.first_name} with {self.doc.firstname} on {self.date}"
-
-
-class Patient(models.Model):
-    firstname = models.CharField(max_length=255)
-    lastname = models.CharField(max_length=255)
-    mobile_no = models.CharField(max_length=15)
-    email = models.EmailField(blank=True, null=True)
-
-    def __str__(self):
-        return self.firstname
 
 
 class Appointment(models.Model):
