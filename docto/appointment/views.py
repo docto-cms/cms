@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Appointment, Patient, Doctor, PatientAppointment
-
+from .models import Appointment, Doctor, PatientAppointment
+from Patient.models import Patient
 
 class AppointmentMobileAPIView(APIView):
 
@@ -149,7 +149,7 @@ class AppointmentMobileAPIView(APIView):
                     {
                         "message": "Appointment accepted and moved to Appointment model.",
                         "appointment_id": appointment_obj.id,
-                        "patient_id": patient.id,
+                        "patient_id": Patient.RegistrationId,
                         "new_patient": created,
                     },
                     status=status.HTTP_200_OK
@@ -228,9 +228,9 @@ class AppointmentAPIView(APIView):
                 return Response({'error': 'Invalid date format'}, status=status.HTTP_400_BAD_REQUEST)
 
             patient, created = Patient.objects.get_or_create(
-                firstname=patient_name,
-                mobile_no=mobile_no,
-                defaults={'email': email}
+                FirstName=patient_name,
+                PhoneNumber=mobile_no,
+                defaults={'Email': email}
             )
 
             try:
@@ -262,9 +262,9 @@ class AppointmentAPIView(APIView):
 
             return Response({
                 'id': appointment.id,
-                'patient_name': appointment.patient.firstname,
-                'mobile_no': appointment.patient.mobile_no,
-                'email': appointment.patient.email,
+                'patient_name': appointment.patient.FirstName,
+                'mobile_no': appointment.patient.PhoneNumber,
+                'email': appointment.patient.Email,
                 'doctor_name': appointment.doctor.firstname,
                 'treatment': appointment.treatment,
                 'notes': appointment.notes,
@@ -283,11 +283,11 @@ class AppointmentAPIView(APIView):
 
             if patient_name:
                 try:
-                    patient = Patient.objects.get(firstname=patient_name)
+                    patient = Patient.objects.get(FirstName=patient_name)
                     return Response({
-                        'firstname': patient.firstname,
-                        'mobile_no': patient.mobile_no,
-                        'email': patient.email,
+                        'firstname': patient.FirstName,
+                        'mobile_no': patient.PhoneNumber,
+                        'email': patient.Email,
                     }, status=status.HTTP_200_OK)
                 except Patient.DoesNotExist:
                     return Response({'error': 'Patient not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -307,9 +307,9 @@ class AppointmentAPIView(APIView):
             for appointment in appointments:
                 result.append({
                     'id': appointment.id,
-                    'patient_name': appointment.patient.firstname,
-                    'mobile_no': appointment.patient.mobile_no,
-                    'email': appointment.patient.email,
+                    'patient_name': appointment.patient.FirstName,
+                    'mobile_no': appointment.patient.PhoneNumber,
+                    'email': appointment.patient.Email,
                     'doctor_name': appointment.doctor.firstname,
                     'treatment': appointment.treatment,
                     'notes': appointment.notes,
@@ -382,8 +382,8 @@ class AppointmentDeleteView(APIView):
 
             try:
                 patient = Patient.objects.get(
-                    firstname=patient_name,
-                    mobile_no=mobile_no
+                    FirstName=patient_name,
+                    PhoneNumber=mobile_no
                 )
             except Patient.DoesNotExist:
                 return Response(
@@ -452,7 +452,7 @@ class UpdateAppointmentStatusAPIView(APIView):
 
             return Response({
                 'id': appointment.id,
-                'patient_name': appointment.patient.firstname,
+                'patient_name': appointment.patient.FirstName,
                 'doctor_name': appointment.doctor.firstname,
                 'status': dict(Appointment.STATUS_CHOICES).get(appointment.status),
                 'date': appointment.date,
