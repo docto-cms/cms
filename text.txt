@@ -1,0 +1,28 @@
+RegisterView
+
+{
+    "first_name":"aswin",
+    "second_name":"raj",
+    "clinic_id":1,
+    "phone_number":"9876543210",
+    "email":"aswinraj@gmail.com",
+    "password":"aswin2030@#",
+    "confirm_password":"aswin2030@#"
+}
+
+LoginView
+
+{
+    "clinic_id":1,
+    "email":"aswinraj@gmail.com",
+    "password":"aswin2030@#"
+}
+
+ChangePassword
+
+{
+    "email":"aswinraj@gmail.com",
+    "old_password":"aswin2030@#",
+    "new_password":"aswin20@#",
+    "confirm_password":"aswin20@#"
+}
