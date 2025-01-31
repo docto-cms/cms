@@ -1,6 +1,5 @@
 from django.db import models
 from Patient.models import *
-from datetime import date
 
 class Doctor(models.Model):
     firstname = models.CharField(max_length=255)
@@ -12,7 +11,6 @@ class Doctor(models.Model):
     
 
 class PatientAppointment(models.Model):
-    RegistrationId = models.CharField(max_length=100)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     mobile_number = models.CharField(max_length=15)
