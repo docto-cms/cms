@@ -59,6 +59,7 @@ class AppointmentMobileAPIView(APIView):
 
         try:
             appointment = PatientAppointment.objects.create(
+                RegistrationId=request.data.get("RegistrationId"),
                 first_name=request.data.get("first_name"),
                 last_name=request.data.get("last_name"),
                 mobile_number=request.data.get("mobile_number"),
@@ -112,11 +113,11 @@ class AppointmentMobileAPIView(APIView):
                     )
                 
                 patient, created = Patient.objects.get_or_create(
-                    email=appointment.email,
+                    Email=appointment.email,
                     defaults={
-                        "firstname": appointment.first_name,
-                        "lastname": appointment.last_name,
-                        "mobile_no": appointment.mobile_number,
+                        "FirstName": appointment.first_name,
+                        "LastName": appointment.last_name,
+                        "PhoneNumber": appointment.mobile_number,
                     },
                 )
 
