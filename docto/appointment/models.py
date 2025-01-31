@@ -12,11 +12,7 @@ class Doctor(models.Model):
     
 
 class PatientAppointment(models.Model):
-<<<<<<< HEAD
-    RegistrationId = models.CharField(max_length=100, unique=True)
-=======
     RegistrationId = models.CharField(max_length=100)
->>>>>>> refs/remotes/origin/main
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     mobile_number = models.CharField(max_length=15)
