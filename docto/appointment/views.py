@@ -22,6 +22,7 @@ class AppointmentMobileAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
+
         """Create a new appointment."""
         serializer = PatientAppointmentCreateSerializer(data=request.data)
         if serializer.is_valid():
