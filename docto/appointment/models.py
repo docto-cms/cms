@@ -34,13 +34,28 @@ class PatientAppointment(models.Model):
 
 
 class Appointment(models.Model):
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="appointments")
-    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name="appointments")
-    treatment = models.TextField(blank=True, null=True)
-    notes = models.TextField(blank=True, null=True)
-    date = models.DateTimeField()
-    duration = models.IntegerField(default=15) 
+     
+    APPOINTMENT_TYPE_CHOICES = [
+        ("scheduled", "Scheduled"),
+        ("walkin", "Walkin"),
+        ("phone_online", "Phone/Online"),
+    ]
 
+    DURATION_CHOICES = [
+        (5, "5"),
+        (10, "10"),
+        (15, "15"),
+        (20, "20"),
+        (25, "25"),
+        (30, "30"),
+        (35, "35"),
+        (40, "40"),
+        (45, "45"),
+        (50, "50"),
+        (55, "55"),
+        (60, "60"),
+    ]
+    
     STATUS_CHOICES = [
         (0, 'Canceled'),
         (1, 'Done'),
@@ -48,8 +63,18 @@ class Appointment(models.Model):
         (3, 'Waiting'),
         (4, 'Scheduled'),
     ]
-    
+
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
+    date = models.DateTimeField()
+    duration = models.PositiveIntegerField(help_text="Duration in minutes")
+    repeat = models.BooleanField(default=False)
+    treatment = models.TextField(blank=True, null=True)
+    appointmentType = models.CharField(max_length=100, choices=APPOINTMENT_TYPE_CHOICES)
+    notes = models.TextField(blank=True, null=True)
+    GoogleMeetLink = models.URLField(blank=True, null=True)    
     status = models.IntegerField(choices=STATUS_CHOICES, default=4)
+
 
     def __str__(self):
         return f"{self.patient.FirstName} with {self.doctor.firstname} on {self.date}"

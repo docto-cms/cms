@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Appointment, Doctor, PatientAppointment
-from .serializers import PatientAppointmentSerializer, PatientAppointmentCreateSerializer, AppointmentUpdateSerializer, AppointmentSerializer
+from .serializers import PatientAppointmentSerializer, PatientAppointmentCreateSerializer, AppointmentUpdateSerializer, AppointmentCreateSerializer, AppointmentSerializer
 from Patient.models import Patient
 
 class AppointmentMobileAPIView(APIView):
@@ -156,22 +156,23 @@ class AppointmentAPIView(APIView):
     def post(self, request):
         try:
             
-            serializer = PatientAppointmentCreateSerializer(data=request.data)
+            serializer = AppointmentCreateSerializer(data=request.data)
             
             if serializer.is_valid():
                 body = serializer.validated_data
                 
                 patient_name = body.get("first_name")
-                mobile_no = body.get("mobile_number")
-                email = body.get("email")
                 doctor_name = body.get("doc").firstname  
-                treatment = body.get("treatment")
-                notes = body.get("notes")
                 date = body.get("date")
                 duration = body.get("duration", 10)
+                repeat = body.get("repeat")
+                treatment = body.get("treatment")
+                appointmentType = body.get("appointmentType")
+                notes = body.get("notes")
+                GoogleMeetLink = body.get("GoogleMeetLink")
 
                 
-                if not all([patient_name, mobile_no, email, doctor_name, date, duration]):
+                if not all([patient_name, doctor_name, date, duration]):
                     return Response({'error': 'Missing required fields'}, status=status.HTTP_400_BAD_REQUEST)
 
                 try:
@@ -184,9 +185,7 @@ class AppointmentAPIView(APIView):
 
                 
                 patient, created = Patient.objects.get_or_create(
-                    firstname=patient_name,
-                    mobile_no=mobile_no,
-                    defaults={'email': email}
+                    firstname=patient_name
                 )
                 patient_appointments = Appointment.objects.filter(patient=patient)
                 patient_appointments_on_date = patient_appointments.filter(date=date)
@@ -197,10 +196,13 @@ class AppointmentAPIView(APIView):
                 appointment = Appointment.objects.create(
                     patient=patient,
                     doctor=doctor,
-                    treatment=treatment,
-                    notes=notes,
                     date=date,
-                    duration=duration
+                    duration=duration,
+                    repeat=repeat,
+                    treatment=treatment,
+                    appointmentType=appointmentType,
+                    notes=notes,
+                    GoogleMeetLink=GoogleMeetLink
                 )
 
                 appointment_serializer = AppointmentSerializer(appointment)
