@@ -4,7 +4,7 @@ class Patient(models.Model):
     RegistrationId = models.AutoField(unique=True,primary_key=True)
     FirstName = models.CharField(max_length=100)
     LastName = models.CharField(max_length=100)
-    PhoneNumber = models.CharField(max_length=15)
+    MobileNo = models.CharField(max_length=15)
     Email = models.EmailField(max_length=100)
     Age = models.IntegerField(null=True)
     Gender = models.CharField(max_length=100)
