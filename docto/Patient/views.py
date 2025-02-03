@@ -36,3 +36,4 @@ class PatientDetailAPIView(APIView):
         patient = get_object_or_404(Patient, pk=pk)
         patient.delete()
         return Response({"message": "Deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+
