@@ -9,7 +9,6 @@ class Doctor(models.Model):
     def __str__(self):
         return self.firstname
     
-
 class PatientAppointment(models.Model):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
@@ -52,6 +51,6 @@ class Appointment(models.Model):
     status = models.IntegerField(choices=STATUS_CHOICES, default=4)
 
     def __str__(self):
-        return f"{self.patient.firstname} with {self.doctor.firstname} on {self.date}"
+        return f"{self.patient.FirstName} with {self.doctor.firstname} on {self.date}"
     
 
