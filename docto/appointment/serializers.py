@@ -46,13 +46,13 @@ class AppointmentUpdateSerializer(serializers.ModelSerializer):
 
 
 class AppointmentSerializer(serializers.ModelSerializer):
-    patient = serializers.CharField(source="patient.firstname", read_only=True)
-    doctor = serializers.CharField(source="doctor.firstname", read_only=True)
+    Patient = serializers.CharField(source="patient.FirstName", read_only=True)
+    Doctor = serializers.CharField(source="doctor.firstname", read_only=True)
 
     class Meta:
         model = Appointments
         fields = [
-            " Patient",
+            "Patient",
             "Doctor",
             "Date",
             "Duration",
@@ -65,7 +65,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
 
 class AppointmentSerializer(serializers.ModelSerializer):
-    patient = serializers.CharField(source="patient.firstname", read_only=True)
+    patient = serializers.CharField(source="patient.FirstName", read_only=True)
     doctor = serializers.CharField(source="doctor.firstname", read_only=True)
 
     class Meta:
@@ -74,12 +74,11 @@ class AppointmentSerializer(serializers.ModelSerializer):
         
         
 class AppointmentCreateSerializer(serializers.ModelSerializer):
-    Patient = serializers.CharField(source="patient.firstname", read_only=True)
-    Doctor = serializers.CharField(source="doctor.firstname", read_only=True)
-    Patient_id=serializers.IntegerField(source="patient.RegistrationId", read_only=True)   
+    Patient = serializers.CharField(source="patient.FirstName", read_only=True)
+    Doctor = serializers.CharField(source="doctor.firstname", read_only=True)   
 
     class Meta:
         model = Appointments
         fields = [
-            "Patient", "Doctor",  "Date", "Duration","Repeat","Treatment", "AppointmentType","Notes", "GoogleMeetLink","Patient_id",
+            "Patient", "Doctor",  "Date", "Duration","Repeat","Treatment", "AppointmentType","Notes", "GoogleMeetLink",
         ]
