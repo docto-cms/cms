@@ -28,22 +28,24 @@ class AppointmentUpdateSerializer(serializers.ModelSerializer):
 
 
 class AppointmentSerializer(serializers.ModelSerializer):
-    patient = serializers.CharField(source="patient.firstname", read_only=True)
+    patient = serializers.CharField(source="patient.FirstName", read_only=True)
     doctor = serializers.CharField(source="doctor.firstname", read_only=True)
 
     class Meta:
         model = Appointment
         fields = [
-            "id", "patient", "doctor", "date", "duration", "repeat", "treatment", "appointmentType", "notes", "GoogleMeetLink", "status",
+            "id", "patient", "doctor", "date", "duration", "repeat", "treatment", 
+            "appointmentType", "notes", "GoogleMeetLink", "status",
         ]
 
 
 class AppointmentCreateSerializer(serializers.ModelSerializer):
-    patient = serializers.CharField(source="patient.firstname", read_only=True)
+    patient = serializers.CharField(source="patient.FirstName", read_only=True)
     doctor = serializers.CharField(source="doctor.firstname", read_only=True)
 
     class Meta:
         model = Appointment
         fields = [
-            "patient.firstname", "doctor.firstname", "date", "duration", "repeat", "treatment", "appointmentType", "notes", "GoogleMeetLink",
+            "patient", "doctor", "date", "duration", "repeat", "treatment", 
+            "appointmentType", "notes", "GoogleMeetLink",
         ]

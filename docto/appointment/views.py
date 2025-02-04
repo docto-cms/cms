@@ -59,7 +59,7 @@ class AppointmentMobileAPIView(APIView):
                     defaults={
                         "FirstName": appointment.first_name,
                         "LastName": appointment.last_name,
-                        "PhoneNumber": appointment.mobile_number,
+                        "MobileNo": appointment.mobile_number,
                     },
                 )
 
@@ -156,42 +156,38 @@ class AppointmentAPIView(APIView):
 
     def post(self, request):
         try:
-            
             serializer = AppointmentCreateSerializer(data=request.data)
             
             if serializer.is_valid():
                 body = serializer.validated_data
                 
-                patient_name = body.get("first_name")
-                doctor_name = body.get("doc").firstname  
+                patient = body.get("patient_name")  
+                doctor = body.get("doctor_name")  
                 date = body.get("date")
-                duration = body.get("duration", 10)
+                duration = body.get("duration")
                 repeat = body.get("repeat")
                 treatment = body.get("treatment")
                 appointmentType = body.get("appointmentType")
                 notes = body.get("notes")
                 GoogleMeetLink = body.get("GoogleMeetLink")
 
-                
-                if not all([patient_name, doctor_name, date, duration]):
+                if  not all([patient, doctor, date]):
                     return Response({'error': 'Missing required fields'}, status=status.HTTP_400_BAD_REQUEST)
 
                 try:
-                    doctor = Doctor.objects.get(firstname=doctor_name)
+                    doctors = Doctor.objects.get(firstname__iexact=doctor)
                 except Doctor.DoesNotExist:
                     return Response({"error": "Doctor not found"}, status=status.HTTP_404_NOT_FOUND)
 
-                if Appointment.objects.filter(doctor=doctor, date=date).exists():
+                if Appointment.objects.filter(doctor=doctors, date=date).exists():
                     return Response({"error": "Doctor is not available at this time"}, status=status.HTTP_400_BAD_REQUEST)
 
-                
                 patient, created = Patient.objects.get_or_create(
-                    firstname=patient_name
+                    firstname__iexact=patient,
+                    defaults={'mobile_no': '0000000000', 'email': 'unknown@example.com'}
                 )
-                patient_appointments = Appointment.objects.filter(patient=patient)
-                patient_appointments_on_date = patient_appointments.filter(date=date)
 
-                if patient_appointments_on_date.exists():
+                if Appointment.objects.filter(patient=patient, date=date).exists():
                     return Response({"error": "Timing not available for this patient"}, status=status.HTTP_400_BAD_REQUEST)
 
                 appointment = Appointment.objects.create(
@@ -214,6 +210,7 @@ class AppointmentAPIView(APIView):
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
     def get(self, request):
         try:
