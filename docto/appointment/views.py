@@ -1,7 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+<<<<<<< HEAD
 from .models import Appointment, Doctor, PatientAppointment
+=======
+from .models import *
+>>>>>>> main
 from .serializers import *
 from Patient.models import Patient
 
@@ -44,7 +48,7 @@ class AppointmentMobileAPIView(APIView):
             if new_status == 1:
                 doctor = appointment.doc
 
-                doctor_conflict = Appointment.objects.filter(
+                doctor_conflict = Appointments.objects.filter(
                     doctor=doctor, date=appointment.date, duration=appointment.duration
                 ).exists()
 
@@ -64,7 +68,7 @@ class AppointmentMobileAPIView(APIView):
                 )
 
                 
-                patient_conflict = Appointment.objects.filter(
+                patient_conflict = Appointments.objects.filter(
                     patient=patient, date=appointment.date, duration=appointment.duration
                 ).exists()
 
@@ -76,7 +80,7 @@ class AppointmentMobileAPIView(APIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
-                appointment_obj = Appointment.objects.create(
+                appointment_obj = Appointments.objects.create(
                     patient=patient,
                     doctor=doctor,
                     treatment=appointment.treatment,
@@ -154,19 +158,20 @@ class EditAppointmentMobileAPIView(APIView):
 
 class AppointmentAPIView(APIView):
     def post(self, request):
-        serializer = AppointmentCreateSerializers(data=request.data)
+        serializer = AppointmentCreateSerializer(data=request.data)
+        
+        print(serializer)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
-        appointments = Appointment.objects.all()
+        appointments = Appointments.objects.all()
         serializer = AppointmentSerializer(appointments, many=True)
         return Response(serializer.data)
 
-   
-
+     
 class DoctorAppointmentsDatesAPIView(APIView):
 
     def get(self, request):
@@ -181,7 +186,7 @@ class DoctorAppointmentsDatesAPIView(APIView):
             except Doctor.DoesNotExist:
                 return Response({'error': 'Doctor not found'}, status=status.HTTP_404_NOT_FOUND)
 
-            appointments = Appointment.objects.filter(doctor=doctor).exclude(status__in=[1, 0]).values('date', 'duration')
+            appointments = Appointments.objects.filter(doctor=doctor).exclude(status__in=[1, 0]).values('date', 'duration')
             appointment_count = appointments.count()
 
             if not appointments:
@@ -235,11 +240,11 @@ class AppointmentDeleteView(APIView):
                 )
 
             try:
-                appointment = Appointment.objects.get(
+                appointment = Appointments.objects.get(
                     patient=patient,
                     date=date
                 )
-            except Appointment.DoesNotExist:
+            except Appointments.DoesNotExist:
                 return Response(
                     {'error': 'Appointment not found'},
                     status=status.HTTP_404_NOT_FOUND
@@ -272,8 +277,8 @@ class UpdateAppointmentStatusAPIView(APIView):
                 return Response({'error': 'Invalid status value'}, status=status.HTTP_400_BAD_REQUEST)
 
             try:
-                appointment = Appointment.objects.get(id=appointment_id)
-            except Appointment.DoesNotExist:
+                appointment = Appointments.objects.get(id=appointment_id)
+            except Appointments.DoesNotExist:
                 return Response({'error': 'Appointment not found'}, status=status.HTTP_404_NOT_FOUND)
 
             if appointment.status == 1:
@@ -298,7 +303,7 @@ class UpdateAppointmentStatusAPIView(APIView):
                 'id': appointment.id,
                 'patient_name': appointment.patient.FirstName,
                 'doctor_name': appointment.doctor.firstname,
-                'status': dict(Appointment.STATUS_CHOICES).get(appointment.status),
+                'status': dict(Appointments.STATUS_CHOICES).get(appointment.status),
                 'date': appointment.date,
                 'duration': appointment.duration
             }, status=status.HTTP_200_OK)

@@ -32,7 +32,7 @@ class PatientAppointment(models.Model):
         return f"{self.first_name} with {self.doc.firstname} on {self.date}"
 
 
-class Appointment(models.Model):
+class Appointments(models.Model):
     APPOINTMENT_TYPE_CHOICES = [
         ("scheduled", "Scheduled"),
         ("walkin", "Walkin"),
@@ -66,4 +66,4 @@ class Appointment(models.Model):
     GoogleMeetLink = models.URLField(blank=True, null=True)
 
     def __str__(self):
-        return self.Patient.FirstName
+        return self.Patient.FirstName 
