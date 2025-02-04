@@ -9,7 +9,17 @@ class PatientAppointmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientAppointment
         fields = [
-            "id", "first_name", "last_name", "mobile_number", "email", "doctor", "treatment", "notes", "date", "duration", "status",
+            "id",
+            "first_name",
+            "last_name",
+            "mobile_number",
+            "email",
+            "doctor",
+            "treatment",
+            "notes",
+            "date",
+            "duration",
+            "status",
         ]
 
 
@@ -17,7 +27,15 @@ class PatientAppointmentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientAppointment
         fields = [
-            "first_name", "last_name", "mobile_number", "email", "doc", "treatment", "notes", "date", "duration",
+            "first_name",
+            "last_name",
+            "mobile_number",
+            "email",
+            "doc",
+            "treatment",
+            "notes",
+            "date",
+            "duration",
         ]
 
 
@@ -34,5 +52,12 @@ class AppointmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Appointment
         fields = [
-            "id", "patient", "doctor", "treatment", "notes", "date", "duration", "status",
+            "id",
+            "patient",
+            "doctor",
+            "treatment",
+            "notes",
+            "date",
+            "duration",
+            "status",
         ]
