@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Patient
-from .serializers import PatientSerializer
+from .serializers import *
 
 class PatientDetailAPIView(APIView):
 
@@ -36,3 +36,19 @@ class PatientDetailAPIView(APIView):
         patient = get_object_or_404(Patient, pk=pk)
         patient.delete()
         return Response({"message": "Deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+
+
+#Quick entry
+
+class BasicInfoAPIView(APIView):
+    def post(self,request):
+        serializer = BasicInfoSerializer(data = request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "message":"created successfully!",
+                    "data": serializer.data
+                },
+                status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
