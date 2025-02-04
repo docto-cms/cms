@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Appointment, Doctor, PatientAppointment
-from .serializers import PatientAppointmentSerializer, PatientAppointmentCreateSerializer, AppointmentUpdateSerializer, AppointmentSerializer
+from .serializers import *
 from Patient.models import Patient
 
 class AppointmentMobileAPIView(APIView):
@@ -153,99 +153,19 @@ class EditAppointmentMobileAPIView(APIView):
         
 
 class AppointmentAPIView(APIView):
-
     def post(self, request):
-        try:
-            
-            serializer = PatientAppointmentCreateSerializer(data=request.data)
-            
-            if serializer.is_valid():
-                body = serializer.validated_data
-                
-                patient_name = body.get("first_name")
-                mobile_no = body.get("mobile_number")
-                email = body.get("email")
-                doctor_name = body.get("doc").firstname  
-                treatment = body.get("treatment")
-                notes = body.get("notes")
-                date = body.get("date")
-                duration = body.get("duration", 10)
-
-                
-                if not all([patient_name, mobile_no, email, doctor_name, date, duration]):
-                    return Response({'error': 'Missing required fields'}, status=status.HTTP_400_BAD_REQUEST)
-
-                try:
-                    doctor = Doctor.objects.get(firstname=doctor_name)
-                except Doctor.DoesNotExist:
-                    return Response({"error": "Doctor not found"}, status=status.HTTP_404_NOT_FOUND)
-
-                if Appointment.objects.filter(doctor=doctor, date=date).exists():
-                    return Response({"error": "Doctor is not available at this time"}, status=status.HTTP_400_BAD_REQUEST)
-
-                
-                patient, created = Patient.objects.get_or_create(
-                    firstname=patient_name,
-                    mobile_no=mobile_no,
-                    defaults={'email': email}
-                )
-                patient_appointments = Appointment.objects.filter(patient=patient)
-                patient_appointments_on_date = patient_appointments.filter(date=date)
-
-                if patient_appointments_on_date.exists():
-                    return Response({"error": "Timing not available for this patient"}, status=status.HTTP_400_BAD_REQUEST)
-
-                appointment = Appointment.objects.create(
-                    patient=patient,
-                    doctor=doctor,
-                    treatment=treatment,
-                    notes=notes,
-                    date=date,
-                    duration=duration
-                )
-
-                appointment_serializer = AppointmentSerializer(appointment)
-
-                return Response(appointment_serializer.data, status=status.HTTP_201_CREATED)
-            
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        serializer = AppointmentCreateSerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
-        try:
-            patient_name = request.query_params.get('patient_name')
-            doctor_name = request.query_params.get('doctor_name')
+        appointments = Appointment.objects.all()
+        serializer = AppointmentSerializer(appointments, many=True)
+        return Response(serializer.data)
 
-            if patient_name:
-                try:
-                    patient = Patient.objects.get(firstname=patient_name)
-                    return Response({
-                        'firstname': patient.firstname,
-                        'mobile_no': patient.mobile_no,
-                        'email': patient.email,
-                    }, status=status.HTTP_200_OK)
-                except Patient.DoesNotExist:
-                    return Response({'error': 'Patient not found'}, status=status.HTTP_404_NOT_FOUND)
-
-            if doctor_name:
-                try:
-                    doctor = Doctor.objects.get(firstname=doctor_name)
-                    return Response({
-                        'firstname': doctor.firstname,
-                    }, status=status.HTTP_200_OK)
-                except Doctor.DoesNotExist:
-                    return Response({'error': 'Doctor not found'}, status=status.HTTP_404_NOT_FOUND)
-            
-            appointments = Appointment.objects.exclude(status__in=[1, 0])
-            result = AppointmentSerializer(appointments, many=True).data
-
-            return Response(result, status=status.HTTP_200_OK)
-
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+   
 
 class DoctorAppointmentsDatesAPIView(APIView):
 

@@ -51,13 +51,23 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Appointment
+        fields = [" __all__"]
+
+
+class AppointmentCreateSerializers(serializers.ModelSerializer):
+    patient = serializers.CharField(source="patient.firstname", read_only=True)
+    doctor = serializers.CharField(source="doctor.firstname", read_only=True)
+
+    class Meta:
+        model = Appointment
         fields = [
-            "id",
-            "patient",
-            "doctor",
-            "treatment",
-            "notes",
-            "date",
-            "duration",
-            "status",
+            " Patient",
+            "Doctor",
+            "Date",
+            "Duration",
+            "Repeat",
+            "Treatment",
+            "AppointmentType",
+            "Notes",
+            "GoogleMeetLink",
         ]
