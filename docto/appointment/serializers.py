@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Appointment, PatientAppointment
+from .models import *
 
 
 class PatientAppointmentSerializer(serializers.ModelSerializer):
@@ -9,7 +9,17 @@ class PatientAppointmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientAppointment
         fields = [
-            "id", "first_name", "last_name", "mobile_number", "email", "doctor", "treatment", "notes", "date", "duration", "status",
+            "id",
+            "first_name",
+            "last_name",
+            "mobile_number",
+            "email",
+            "doctor",
+            "treatment",
+            "notes",
+            "date",
+            "duration",
+            "status",
         ]
 
 
@@ -17,7 +27,15 @@ class PatientAppointmentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientAppointment
         fields = [
-            "first_name", "last_name", "mobile_number", "email", "doc", "treatment", "notes", "date", "duration",
+            "first_name",
+            "last_name",
+            "mobile_number",
+            "email",
+            "doc",
+            "treatment",
+            "notes",
+            "date",
+            "duration",
         ]
 
 
@@ -32,20 +50,36 @@ class AppointmentSerializer(serializers.ModelSerializer):
     doctor = serializers.CharField(source="doctor.firstname", read_only=True)
 
     class Meta:
-        model = Appointment
+        model = Appointments
         fields = [
-            "id", "patient", "doctor", "date", "duration", "repeat", "treatment", 
-            "appointmentType", "notes", "GoogleMeetLink", "status",
+            " Patient",
+            "Doctor",
+            "Date",
+            "Duration",
+            "Repeat",
+            "Treatment",
+            "AppointmentType",
+            "Notes",
+            "GoogleMeetLink",
         ]
 
 
-class AppointmentCreateSerializer(serializers.ModelSerializer):
-    patient = serializers.CharField(source="patient.FirstName", read_only=True)
+class AppointmentSerializer(serializers.ModelSerializer):
+    patient = serializers.CharField(source="patient.firstname", read_only=True)
     doctor = serializers.CharField(source="doctor.firstname", read_only=True)
 
     class Meta:
-        model = Appointment
+        model = Appointments
+        fields = "__all__"
+        
+        
+class AppointmentCreateSerializer(serializers.ModelSerializer):
+    Patient = serializers.CharField(source="patient.firstname", read_only=True)
+    Doctor = serializers.CharField(source="doctor.firstname", read_only=True)
+    Patient_id=serializers.IntegerField(source="patient.RegistrationId", read_only=True)   
+
+    class Meta:
+        model = Appointments
         fields = [
-            "patient", "doctor", "date", "duration", "repeat", "treatment", 
-            "appointmentType", "notes", "GoogleMeetLink",
+            "Patient", "Doctor",  "Date", "Duration","Repeat","Treatment", "AppointmentType","Notes", "GoogleMeetLink","Patient_id",
         ]
