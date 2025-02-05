@@ -3,7 +3,7 @@ from .models import *
 
 
 class PatientAppointmentSerializer(serializers.ModelSerializer):
-    doctor = serializers.CharField(source="doc.firstname", read_only=True)
+    doctor = serializers.CharField(source="doc.FirstName", read_only=True)
     status = serializers.CharField(source="get_status_display", read_only=True)
 
     class Meta:
@@ -45,23 +45,16 @@ class AppointmentUpdateSerializer(serializers.ModelSerializer):
         fields = ["status"]
 
 
+<<<<<<< HEAD
 
 class AppointmentSerializer(serializers.ModelSerializer):
     patient = serializers.CharField(source="patient.firstname", read_only=True)
+=======
+class AppointmentSerializer(serializers.ModelSerializer):
+    patient = serializers.CharField(source="patient.FirstName", read_only=True)
+>>>>>>> 53be633cbe8e2762fb0e7d5dad345d8db8bf0f18
     doctor = serializers.CharField(source="doctor.firstname", read_only=True)
 
     class Meta:
         model = Appointments
         fields = "__all__"
-        
-        
-class AppointmentCreateSerializer(serializers.ModelSerializer):
-    Patient = serializers.CharField(source="patient.firstname", read_only=True)
-    Doctor = serializers.CharField(source="doctor.firstname", read_only=True)
-    Patient_id=serializers.IntegerField(source="patient.RegistrationId", read_only=True)   
-
-    class Meta:
-        model = Appointments
-        fields = [
-            "Patient", "Doctor",  "Date", "Duration","Repeat","Treatment", "AppointmentType","Notes", "GoogleMeetLink","Patient_id",
-        ]
