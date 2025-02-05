@@ -66,4 +66,4 @@ class Appointments(models.Model):
     GoogleMeetLink = models.URLField(blank=True, null=True)
 
     def __str__(self):
-        return self.Patient.FirstName 
+        return self.Patient.FirstName

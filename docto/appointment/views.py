@@ -152,6 +152,7 @@ class EditAppointmentMobileAPIView(APIView):
         return Response({"message": "Appointment updated", "data": data}, status=status.HTTP_200_OK)
         
 
+
 class AppointmentAPIView(APIView):
     def post(self, request):
         serializer = AppointmentCreateSerializer(data=request.data)
@@ -167,6 +168,7 @@ class AppointmentAPIView(APIView):
         serializer = AppointmentSerializer(appointments, many=True)
         return Response(serializer.data)
 
+     
      
 class DoctorAppointmentsDatesAPIView(APIView):
 
