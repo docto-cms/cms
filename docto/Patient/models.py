@@ -18,7 +18,7 @@ class Patient(models.Model):
     Gender = models.CharField(max_length=100, choices=Gender_Choices)
     City=models.CharField(max_length=100)
     Doctor = models.CharField(max_length=100)
-    RecNo = models.CharField(max_length=100)
+    RefferedBy = models.CharField(max_length=100)
     Fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     ConsultationFee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True
     )
