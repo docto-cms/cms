@@ -10,4 +10,3 @@ urlpatterns = [
     path('appointmentdelete/', AppointmentDeleteView.as_view(), name='appointmentdelete'),
     path('appointments/<int:appointment_id>', UpdateAppointmentStatusAPIView.as_view(), name='apoointments-update-status'),
 ]
-# vjSHDHvfisduvhizk
