@@ -45,14 +45,9 @@ class AppointmentUpdateSerializer(serializers.ModelSerializer):
         fields = ["status"]
 
 
-<<<<<<< HEAD
 
 class AppointmentSerializer(serializers.ModelSerializer):
-    patient = serializers.CharField(source="patient.firstname", read_only=True)
-=======
-class AppointmentSerializer(serializers.ModelSerializer):
     patient = serializers.CharField(source="patient.FirstName", read_only=True)
->>>>>>> 53be633cbe8e2762fb0e7d5dad345d8db8bf0f18
     doctor = serializers.CharField(source="doctor.firstname", read_only=True)
 
     class Meta:

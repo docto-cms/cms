@@ -73,7 +73,5 @@ class Appointments(models.Model):
     GoogleMeetLink = models.URLField(blank=True, null=True)
     status = models.IntegerField(choices=STATUS_CHOICES, default=4)
 
-
-
     def __str__(self):
         return self.Patient.FirstName
