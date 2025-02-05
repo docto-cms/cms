@@ -4,6 +4,7 @@ from rest_framework import status
 from .models import *
 from .serializers import *
 from Patient.models import Patient
+from django.shortcuts import get_object_or_404
 
 class AppointmentMobileAPIView(APIView):
 
@@ -153,20 +154,48 @@ class EditAppointmentMobileAPIView(APIView):
         
 
 class AppointmentAPIView(APIView):
-    def post(self, request):
-        serializer = AppointmentCreateSerializer(data=request.data)
-        
-        print(serializer)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
+    """
+    View to list all appointments or create a new one.
+    """
     def get(self, request):
         appointments = Appointments.objects.all()
         serializer = AppointmentSerializer(appointments, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        patient_data = request.data.get("patient", {})
+        doctor_name = request.data.get("doctor")
+        appointment_data = request.data
+
+        patient_instance, created = Patient.objects.get_or_create(
+            FirstName=patient_data.get("FirstName"),
+            LastName=patient_data.get("LastName"),
+            defaults={
+                "PhoneNumber": patient_data.get("PhoneNumber"),
+                "Email": patient_data.get("Email"),
+                "Age": patient_data.get("Age"),
+                "Gender": patient_data.get("Gender"),
+                "City": patient_data.get("City"),
+            },
+        )
+        doctor_instance = get_object_or_404(Doctor, firstname=doctor_name)
+
+        appointment = Appointments.objects.create(
+            Patient=patient_instance,
+            Doctor=doctor_instance,
+            Date=appointment_data.get("Date"),
+            Duration=appointment_data.get("Duration"),
+            Repeat=appointment_data.get("Repeat"),
+            Treatment=appointment_data.get("Treatment"),
+            AppointmentType=appointment_data.get("AppointmentType"),
+            Notes=appointment_data.get("Notes"),
+            GoogleMeetLink=appointment_data.get("GoogleMeetLink"),
+        )
+
+        return Response(
+            {"message": "Appointment created successfully"},
+            status=status.HTTP_201_CREATED,
+        )
 
      
 class DoctorAppointmentsDatesAPIView(APIView):
@@ -279,30 +308,29 @@ class UpdateAppointmentStatusAPIView(APIView):
                 return Response({'error': 'Appointment not found'}, status=status.HTTP_404_NOT_FOUND)
 
             if appointment.status == 1:
-                return Response({'error': 'Appointment is already done. It cannot be changed.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'done': 'Appointment is already done. It cannot be changed.'}, status=status.HTTP_400_BAD_REQUEST)
 
             if appointment.status == 2:
                 if new_status not in [1, 0]:
-                    return Response({'error': 'Engaged appointments can only be changed to Done or Canceled'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'done': 'Engaged appointments can only be changed to Done or Canceled'}, status=status.HTTP_400_BAD_REQUEST)
 
             if appointment.status == 3: 
                 if new_status != 2:
-                    return Response({'error': 'Waiting appointments can only be changed to Engaged'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'done': 'Waiting appointments can only be changed to Engaged'}, status=status.HTTP_400_BAD_REQUEST)
 
             if appointment.status == 4: 
                 if new_status not in [2, 3]: 
-                    return Response({'error': 'Scheduled appointments can only be changed to Engaged or Waiting'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'done': 'Scheduled appointments can only be changed to Engaged or Waiting'}, status=status.HTTP_400_BAD_REQUEST)
 
             appointment.status = new_status
             appointment.save()
 
             return Response({
-                'id': appointment.id,
-                'patient_name': appointment.patient.FirstName,
-                'doctor_name': appointment.doctor.firstname,
+                'patient_name': appointment.Patient.FirstName,
+                'doctor_name': appointment.Doctor.firstname,
                 'status': dict(Appointments.STATUS_CHOICES).get(appointment.status),
-                'date': appointment.date,
-                'duration': appointment.duration
+                'Date': appointment.Date,
+                'Duration': appointment.Duration
             }, status=status.HTTP_200_OK)
 
         except Exception as e:

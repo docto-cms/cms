@@ -54,8 +54,15 @@ class Appointments(models.Model):
         (60, "60"),
     ]
 
-    Patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    STATUS_CHOICES = [
+        (0, 'Canceled'),
+        (1, 'Done'),
+        (2, 'Engaged'),
+        (3, 'Waiting'),
+        (4, 'Scheduled'),
+    ]
 
+    Patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     Doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     Date = models.DateTimeField()
     Duration = models.PositiveIntegerField(choices=DURATION_CHOICES)
@@ -64,6 +71,8 @@ class Appointments(models.Model):
     AppointmentType = models.CharField(max_length=100, choices=APPOINTMENT_TYPE_CHOICES)
     Notes = models.TextField(blank=True, null=True)
     GoogleMeetLink = models.URLField(blank=True, null=True)
+    status = models.IntegerField(choices=STATUS_CHOICES, default=4)
+
 
 
     def __str__(self):
