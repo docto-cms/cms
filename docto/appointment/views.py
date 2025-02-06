@@ -265,7 +265,8 @@ class AppointmentAPIView(APIView):
             {"message": "Appointment created successfully"},
             status=status.HTTP_201_CREATED,
         )
-
+     
+     
 class DoctorAppointmentCountAPIView(APIView):
 
     def get(self, request):

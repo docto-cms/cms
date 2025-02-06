@@ -47,6 +47,11 @@ class AppointmentUpdateSerializer(serializers.ModelSerializer):
 
 
 class AppointmentSerializer(serializers.ModelSerializer):
+<<<<<<< HEAD
+=======
+    patient = serializers.CharField(source="patient.firstname", read_only=True)
+class AppointmentSerializer(serializers.ModelSerializer):
+>>>>>>> main
     patient = serializers.CharField(source="patient.FirstName", read_only=True)
     doctor = serializers.CharField(source="doctor.firstname", read_only=True)
 
