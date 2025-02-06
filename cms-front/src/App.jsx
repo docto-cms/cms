@@ -14,6 +14,7 @@ import TodayPatientpage from './pages/TodayPatientpage';
 import TotalAppointment from './components/Appointment/TotalAppointment';
 import NewAppointment from './components/Appointment/Addappointment';
 import AddAppointmentPage from './pages/AddAppointmentPage';
+import SearchPatientPage from './pages/SearchPatientPage';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
           <Route index path='/today-patient' element={<TodayPatientpage />} />
           <Route path='/total-appointments' element={<TotalAppointment/>}/>
           <Route path="/add-appointment" element={<AddAppointmentPage />} />
+          <Route path="/search-patient" element={<SearchPatientPage />} />
           {/* Add more nested routes here */}
         </Route>
       </Routes>
