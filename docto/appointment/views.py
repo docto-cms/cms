@@ -238,12 +238,8 @@ class AppointmentAPIView(APIView):
             status=status.HTTP_201_CREATED,
         )
      
-<<<<<<< HEAD
      
-class DoctorAppointmentsDatesAPIView(APIView):
-=======
 class DoctorAppointmentCountAPIView(APIView):
->>>>>>> b046a55b5d7684afd078b399bdb786bb37c46a2c
 
     def get(self, request):
         try:
