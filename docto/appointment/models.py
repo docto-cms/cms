@@ -33,6 +33,7 @@ class PatientAppointment(models.Model):
 
 
 class Appointments(models.Model):
+    
     APPOINTMENT_TYPE_CHOICES = [
         ("scheduled", "Scheduled"),
         ("walkin", "Walkin"),
