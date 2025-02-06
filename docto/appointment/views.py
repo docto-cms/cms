@@ -202,6 +202,13 @@ class AppointmentAPIView(APIView):
             Q(Date__lte=appointment_date, Date__gt=appointment_date)
         )
 
+        overlapping_doctor = Appointments.objects.filter(
+            Doctor=doctor_instance
+        ).filter(
+            Date__lt=appointment_end_time,  # Existing appointment starts before new one ends
+            Date__gte=appointment_date - timedelta(minutes=duration),  # Existing appointment ends after new one starts
+        )
+
         if overlapping_doctor.exists():
             return Response({"error": "Doctor is not available at this time"}, status=status.HTTP_400_BAD_REQUEST)
 
