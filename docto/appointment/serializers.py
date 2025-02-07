@@ -1,15 +1,25 @@
 from rest_framework import serializers
-from .models import Appointment, PatientAppointment
+from .models import *
 
 
 class PatientAppointmentSerializer(serializers.ModelSerializer):
-    doctor = serializers.CharField(source="doc.firstname", read_only=True)
+    doctor = serializers.CharField(source="doc.FirstName", read_only=True)
     status = serializers.CharField(source="get_status_display", read_only=True)
 
     class Meta:
         model = PatientAppointment
         fields = [
-            "id", "first_name", "last_name", "mobile_number", "email", "doctor", "treatment", "notes", "date", "duration", "status",
+            "id",
+            "first_name",
+            "last_name",
+            "mobile_number",
+            "email",
+            "doctor",
+            "treatment",
+            "notes",
+            "date",
+            "duration",
+            "status",
         ]
 
 
@@ -17,7 +27,15 @@ class PatientAppointmentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientAppointment
         fields = [
-            "first_name", "last_name", "mobile_number", "email", "doc", "treatment", "notes", "date", "duration",
+            "first_name",
+            "last_name",
+            "mobile_number",
+            "email",
+            "doc",
+            "treatment",
+            "notes",
+            "date",
+            "duration",
         ]
 
 
@@ -28,11 +46,9 @@ class AppointmentUpdateSerializer(serializers.ModelSerializer):
 
 
 class AppointmentSerializer(serializers.ModelSerializer):
-    patient = serializers.CharField(source="patient.firstname", read_only=True)
+    patient = serializers.CharField(source="patient.FirstName", read_only=True)
     doctor = serializers.CharField(source="doctor.firstname", read_only=True)
 
     class Meta:
-        model = Appointment
-        fields = [
-            "id", "patient", "doctor", "treatment", "notes", "date", "duration", "status",
-        ]
+        model = Appointments
+        fields = "__all__"
