@@ -16,7 +16,7 @@ class PatientAppointment(models.Model):
     last_name = models.CharField(max_length=255)
     mobile_number = models.CharField(max_length=15)
     email = models.EmailField(blank=True, null=True)
-    doc = models.ForeignKey(
+    doctor = models.ForeignKey(
         Doctor, on_delete=models.CASCADE, related_name="patientappoinments"
     )
     treatment = models.TextField(blank=True, null=True)
@@ -29,11 +29,10 @@ class PatientAppointment(models.Model):
     status = models.IntegerField(choices=STATUS_CHOICES, default=2)
 
     def __str__(self):
-        return f"{self.first_name} with {self.doc.firstname} on {self.date}"
+        return f"{self.first_name} with {self.doctor.firstname} on {self.date}"
 
 
 class Appointments(models.Model):
-    
     APPOINTMENT_TYPE_CHOICES = [
         ("scheduled", "Scheduled"),
         ("walkin", "Walkin"),
@@ -62,7 +61,6 @@ class Appointments(models.Model):
         (3, 'Waiting'),
         (4, 'Scheduled'),
     ]
-
     Patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     Doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     Date = models.DateTimeField()
