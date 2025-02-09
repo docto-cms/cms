@@ -5,9 +5,6 @@ from .models import *
 from .serializers import *
 from Patient.models import Patient
 from django.shortcuts import get_object_or_404
-from django.utils.dateparse import parse_datetime
-from django.utils.timezone import is_naive, make_aware
-from datetime import timedelta, timezone
 
 class AppointmentMobileAPIView(APIView):
 
@@ -160,7 +157,6 @@ class AppointmentAPIView(APIView):
     """
     View to list all appointments or create a new one.
     """
-
     def get(self, request):
         appointments = Appointments.objects.all()
         serializer = AppointmentSerializer(appointments, many=True)
@@ -171,42 +167,6 @@ class AppointmentAPIView(APIView):
         doctor_name = request.data.get("doctor")
         appointment_data = request.data
 
-        appointment_date = parse_datetime(appointment_data.get("Date"))
-        if appointment_date is None:
-            return Response({"error": "Invalid date format"}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Ensure the datetime is timezone-aware
-        if is_naive(appointment_date):
-            appointment_date = make_aware(appointment_date)
-
-        duration = int(appointment_data.get("Duration", 10))  # Assuming duration is in minutes
-
-        doctor_instance = get_object_or_404(Doctor, firstname=doctor_name)
-
-        appointment_end_time = appointment_date + timedelta(minutes=duration)
-
-        # Check if an appointment with the exact same date and time already exists
-        exact_appointment_exists = Appointments.objects.filter(
-            Doctor=doctor_instance,
-            Date=appointment_date
-        ).exists()
-
-        if exact_appointment_exists:
-            return Response({"error": "An appointment with this exact date and time already exists for this doctor."},
-                            status=status.HTTP_400_BAD_REQUEST)
-
-        # Check for overlapping appointments (new appointment must not overlap any existing appointment)
-        overlapping_appointments = Appointments.objects.filter(
-            Doctor=doctor_instance
-        ).filter(
-            Date__lt=appointment_end_time,  # Existing appointment starts before new appointment ends
-            Date__gte=appointment_date      # Existing appointment ends after new appointment starts
-        )
-
-        if overlapping_appointments.exists():
-            return Response({"error": "Doctor is not available at this time"}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Create or retrieve patient
         patient_instance, created = Patient.objects.get_or_create(
             FirstName=patient_data.get("FirstName"),
             LastName=patient_data.get("LastName"),
@@ -218,12 +178,12 @@ class AppointmentAPIView(APIView):
                 "City": patient_data.get("City"),
             },
         )
+        doctor_instance = get_object_or_404(Doctor, firstname=doctor_name)
 
-        # Create the appointment
         appointment = Appointments.objects.create(
             Patient=patient_instance,
             Doctor=doctor_instance,
-            Date=appointment_date,  # Use aware datetime
+            Date=appointment_data.get("Date"),
             Duration=appointment_data.get("Duration"),
             Repeat=appointment_data.get("Repeat"),
             Treatment=appointment_data.get("Treatment"),
@@ -236,8 +196,9 @@ class AppointmentAPIView(APIView):
             {"message": "Appointment created successfully"},
             status=status.HTTP_201_CREATED,
         )
+
      
-class DoctorAppointmentCountAPIView(APIView):
+class DoctorAppointmentsDatesAPIView(APIView):
 
     def get(self, request):
         try:
@@ -254,7 +215,7 @@ class DoctorAppointmentCountAPIView(APIView):
             appointmentscount = Appointments.objects.filter()
             appointment_counts = appointmentscount.count()
 
-            appointments = Appointments.objects.filter(Doctor=doctor).exclude(status__in=[1, 0]).values('Date', 'Duration')
+            appointments = Appointments.objects.filter(doctor=doctor).exclude(status__in=[1, 0]).values('date', 'duration')
             appointment_count = appointments.count()
 
             if not appointments:
