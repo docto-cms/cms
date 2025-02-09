@@ -211,6 +211,9 @@ class DoctorAppointmentsDatesAPIView(APIView):
                 doctor = Doctor.objects.get(firstname=doctor_name)
             except Doctor.DoesNotExist:
                 return Response({'error': 'Doctor not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+            appointmentscount = Appointments.objects.filter()
+            appointment_counts = appointmentscount.count()
 
             appointments = Appointments.objects.filter(doctor=doctor).exclude(status__in=[1, 0]).values('date', 'duration')
             appointment_count = appointments.count()
@@ -224,13 +227,14 @@ class DoctorAppointmentsDatesAPIView(APIView):
 
             appointment_details = [
                 {
-                    'datetime': appointment['date'],
-                    'duration': appointment['duration']
+                    'datetime': appointment['Date'],
+                    'duration': appointment['Duration']
                 }
                 for appointment in appointments
             ]
 
             return Response({
+                'total': appointment_counts,
                 'doctor_name': doctor.firstname,
                 'appointment_count': appointment_count,
                 'appointments': appointment_details
