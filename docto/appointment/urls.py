@@ -4,7 +4,7 @@ from .views import *
 urlpatterns = [
     path('mobileappointments', AppointmentMobileAPIView.as_view(), name='mobileappointments'),
     path('mobileappointments/<int:appointment_id>', AppointmentMobileAPIView.as_view(), name='mobileappointments-details'),
-    path('mobileappointmetsedit/<int:appointment_id>',EditAppointmentMobileAPIView.as_view(),name='mobileappointmetsedit'),
+    path('mobileappointmentsedit/<int:appointment_id>',EditAppointmentMobileAPIView.as_view(),name='mobileappointmetsedit'),
     path('appointments/', AppointmentAPIView.as_view(), name='appointments'),
     path('doctorcount/', DoctorAppointmentCountAPIView.as_view(), name='doctorcount'),
     path('count/', AppointmentTotalCountAPIView.as_view(), name='count'),
