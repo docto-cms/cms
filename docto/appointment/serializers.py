@@ -24,8 +24,7 @@ class PatientAppointmentSerializer(serializers.ModelSerializer):
 
 
 class PatientAppointmentCreateSerializer(serializers.ModelSerializer):
-    doctor = serializers.CharField(source="doctor.firstname", read_only=True)
-
+ 
     class Meta:
         model = PatientAppointment
         fields = [
@@ -40,6 +39,9 @@ class PatientAppointmentCreateSerializer(serializers.ModelSerializer):
             "duration",
         ]
 
+    def get_doctor_name(self, obj):
+        return obj.doctor.firstname if obj.Doctor else None
+    
 
 class AppointmentUpdateSerializer(serializers.ModelSerializer):
     class Meta:

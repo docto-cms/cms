@@ -26,15 +26,19 @@ class AppointmentMobileAPIView(APIView):
         appointments = PatientAppointment.objects.all()
         serializer = PatientAppointmentSerializer(appointments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
 
     def post(self, request):
-
         """Create a new appointment."""
         serializer = PatientAppointmentCreateSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": "Appointment created", "data": serializer.data}, status=status.HTTP_201_CREATED)
+            return Response(
+                {"message": "Appointment created", "data": serializer.data},
+                status=status.HTTP_201_CREATED,
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
         
     def put(self, request, appointment_id):
         """Update appointment status and move it to Appointment model if accepted."""
@@ -47,7 +51,7 @@ class AppointmentMobileAPIView(APIView):
         if serializer.is_valid():
             new_status = serializer.validated_data.get("status")
 
-            if new_status == 1:
+            if new_status == "Accept":
                 doctor_name = appointment.doctor
                 appointment_date = appointment.date
                 if appointment_date is None:
@@ -87,7 +91,7 @@ class AppointmentMobileAPIView(APIView):
                 )
 
                 if overlapping_patient.exists():
-                    appointment.status = 0
+                    appointment.status = "Decline"
                     appointment.save()
                     return Response({"error": "Patient is already booked at this time"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -178,7 +182,7 @@ class AppointmentAPIView(APIView):
     View to list all appointments or create a new one.
     """
     def get(self, request):
-        appointments = Appointments.objects.exclude(status=0) 
+        appointments = Appointments.objects.exclude(status='Canceled') 
         serializer = AppointmentGEtSerializer(appointments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -339,7 +343,7 @@ class AppointmentDeleteView(APIView):
             mobile_no = request.query_params.get('mobile_no')
             date_str = request.query_params.get('date')
 
-            # Check if all required parameters are provided
+
             if not all([patient_name, mobile_no, date_str]):
                 return Response(
                     {'error': 'Missing required parameters: patient_name, mobile_no, and date'},
@@ -370,14 +374,14 @@ class AppointmentDeleteView(APIView):
                     Patient=patient,
                     Date=appointment_date
                 )
+
             except Appointments.DoesNotExist:
                 return Response(
                     {'error': 'Appointment not found'},
                     status=status.HTTP_404_NOT_FOUND
                 )
 
-
-            appointment.status = 0
+            appointment.status = 'Canceled'
             appointment.save()
 
             return Response(
@@ -398,7 +402,7 @@ class UpdateAppointmentStatusAPIView(APIView):
         try:
             new_status = request.data.get('status')
 
-            if new_status not in [0, 1, 2, 3, 4]: 
+            if new_status not in ['Canceled', 'Done', 'Engaged', 'Waiting', 'Canceled']: 
                 return Response({'error': 'Invalid status value'}, status=status.HTTP_400_BAD_REQUEST)
 
             try:
@@ -406,19 +410,19 @@ class UpdateAppointmentStatusAPIView(APIView):
             except Appointments.DoesNotExist:
                 return Response({'error': 'Appointment not found'}, status=status.HTTP_404_NOT_FOUND)
 
-            if appointment.status == 1:
+            if appointment.status == 'Done':
                 return Response({'done': 'Appointment is already done. It cannot be changed.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            if appointment.status == 2:
-                if new_status not in [1, 0]:
+            if appointment.status == 'Engaged':
+                if new_status not in ['Done']:
                     return Response({'done': 'Engaged appointments can only be changed to Done or Canceled'}, status=status.HTTP_400_BAD_REQUEST)
 
-            if appointment.status == 3: 
+            if appointment.status == 'Waiting': 
                 if new_status != 2:
                     return Response({'done': 'Waiting appointments can only be changed to Engaged'}, status=status.HTTP_400_BAD_REQUEST)
 
-            if appointment.status == 4: 
-                if new_status not in [2, 3]: 
+            if appointment.status == 'Scheduled': 
+                if new_status not in ['Engaged', 'Waiting']: 
                     return Response({'done': 'Scheduled appointments can only be changed to Engaged or Waiting'}, status=status.HTTP_400_BAD_REQUEST)
 
             appointment.status = new_status
@@ -439,7 +443,7 @@ class UpdateAppointmentStatusAPIView(APIView):
 class UpcomingAppointmentsAPIView(APIView):
     def get(self, request):
         appointments = Appointments.objects.filter(
-            Date__gte=now(), status__in=[2, 3, 4]
+            Date__gte=now(), status__in=['Engaged', 'Waiting', 'Scheduled']
         ).order_by("Date")
 
         serializer = AppointmentGEtSerializer(appointments, many=True)
