@@ -7,7 +7,6 @@ urlpatterns = [
     path('mobileappointments/<int:appointment_id>', AppointmentMobileAPIView.as_view(), name='mobileappointments-details'),
     path('mobileappointmetsedit/<int:appointment_id>',EditAppointmentMobileAPIView.as_view(),name='mobileappointmetsedit'),
     path('appointments/', AppointmentAPIView.as_view(), name='appointments'),
-    path('doctorsearch/', DoctorAppointmentCountAPIView.as_view(), name='doctorsearch'),
     path('appointmentdelete/', AppointmentDeleteView.as_view(), name='appointmentdelete'),
     path('doctorsearch/', DoctorAppointmentCountAPIView.as_view(), name='doctorsearch'),
     path('appointmentdelete', AppointmentDeleteView.as_view(), name='appointmentdelete'),
