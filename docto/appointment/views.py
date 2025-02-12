@@ -28,15 +28,11 @@ class AppointmentMobileAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 
-    def post(self, request):
-        """Create a new appointment."""
+    def post(self, request, *args, **kwargs):
         serializer = PatientAppointmentCreateSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(
-                {"message": "Appointment created", "data": serializer.data},
-                status=status.HTTP_201_CREATED,
-            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
         
@@ -192,7 +188,6 @@ class AppointmentAPIView(APIView):
         doctor_name = request.data.get("doctor")
         appointment_data = request.data
 
-        
         appointment_date = parse_datetime(appointment_data.get("Date"))
         if appointment_date is None:
             return Response({"error": "Invalid date format"}, status=status.HTTP_400_BAD_REQUEST)

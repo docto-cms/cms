@@ -24,23 +24,20 @@ class PatientAppointmentSerializer(serializers.ModelSerializer):
 
 
 class PatientAppointmentCreateSerializer(serializers.ModelSerializer):
- 
+    doctor = serializers.SlugRelatedField(queryset=Doctor.objects.all(), slug_field='firstname')
     class Meta:
         model = PatientAppointment
         fields = [
-            "first_name",
-            "last_name",
-            "mobile_number",
-            "email",
-            "doctor",
-            "treatment",
-            "notes",
-            "date",
-            "duration",
-        ]
-
-    def get_doctor_name(self, obj):
-        return obj.doctor.firstname if obj.Doctor else None
+            'first_name', 
+            'last_name', 
+            'mobile_number', 
+            'email', 
+            'doctor', 
+            'treatment', 
+            'notes', 
+            'date', 
+            'duration'
+            ]
     
 
 class AppointmentUpdateSerializer(serializers.ModelSerializer):
@@ -49,13 +46,13 @@ class AppointmentUpdateSerializer(serializers.ModelSerializer):
         fields = ["status"]
 
 
-class AppointmentSerializer(serializers.ModelSerializer):
-    patient = serializers.CharField(source="patient.FirstName", read_only=True)
-    doctor = serializers.CharField(source="doctor.firstname", read_only=True)
+# class AppointmentSerializer(serializers.ModelSerializer):
+#     patient = serializers.CharField(source="patient.FirstName", read_only=True)
+#     doctor = serializers.CharField(source="doctor.firstname", read_only=True)
 
-    class Meta:
-        model = Appointments
-        fields = "__all__"
+#     class Meta:
+#         model = Appointments
+#         fields = "__all__"
 
 
 class AppointmentGEtSerializer(serializers.ModelSerializer):
