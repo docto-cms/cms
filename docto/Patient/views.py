@@ -59,8 +59,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Patient
+<<<<<<< HEAD
 from .serializers import PatientSerializer, BasicInfoSerializer
 
+=======
+from .serializers import *
+from .models import Doctor
+>>>>>>> 6b8f0baa9b89897ba75c58cad2dacfda55531f43
 
 class PatientDetailAPIView(APIView):
     """
@@ -78,6 +83,7 @@ class PatientDetailAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
+        doctor= Doctor.objects.all()
         serializer = PatientSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()

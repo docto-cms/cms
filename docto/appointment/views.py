@@ -7,7 +7,9 @@ from Patient.models import Patient
 from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import is_naive, make_aware
-from datetime import timedelta, timezone
+from datetime import timedelta
+from django.db.models import Q
+from django.utils.timezone import now
 
 class AppointmentMobileAPIView(APIView):
 
@@ -24,16 +26,16 @@ class AppointmentMobileAPIView(APIView):
         appointments = PatientAppointment.objects.all()
         serializer = PatientAppointmentSerializer(appointments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
 
-    def post(self, request):
-
-        """Create a new appointment."""
+    def post(self, request, *args, **kwargs):
         serializer = PatientAppointmentCreateSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": "Appointment created", "data": serializer.data}, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
+        
     def put(self, request, appointment_id):
         """Update appointment status and move it to Appointment model if accepted."""
         try:
@@ -45,52 +47,62 @@ class AppointmentMobileAPIView(APIView):
         if serializer.is_valid():
             new_status = serializer.validated_data.get("status")
 
-            if new_status == 1:
-                doctor = appointment.doc
+            if new_status == "Accept":
+                doctor_name = appointment.doctor
+                appointment_date = appointment.date
+                if appointment_date is None:
+                    return Response({"error": "Invalid date format"}, status=status.HTTP_400_BAD_REQUEST)
+                
+                duration = appointment.duration 
 
-                doctor_conflict = Appointments.objects.filter(
-                    doctor=doctor, date=appointment.date, duration=appointment.duration
-                ).exists()
+                doctor_instance = get_object_or_404(Doctor, firstname=doctor_name)
+                
+                if is_naive(appointment_date):
+                    appointment_date = make_aware(appointment_date)
 
-                if doctor_conflict:
-                    return Response(
-                        {"error": "Doctor is not available at this time"},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
+                appointment_end_time = appointment_date + timedelta(minutes=duration)
+
+                overlapping_doctor = Appointments.objects.filter(
+                    Doctor=doctor_instance,
+                    Date__lt=appointment_end_time,
+                    Date__gte=appointment_date - timedelta(minutes=(duration - 1))
+                )
+
+                if overlapping_doctor.exists():
+                    return Response({"error": "Doctor is not available at this time"}, status=status.HTTP_400_BAD_REQUEST)
 
                 patient, created = Patient.objects.get_or_create(
                     Email=appointment.email,
                     defaults={
                         "FirstName": appointment.first_name,
                         "LastName": appointment.last_name,
-                        "MobileNo": appointment.mobile_number,
+                        "PhoneNumber": appointment.mobile_number,
                     },
                 )
 
-                
-                patient_conflict = Appointments.objects.filter(
-                    patient=patient, date=appointment.date, duration=appointment.duration
-                ).exists()
+                overlapping_patient = Appointments.objects.filter(
+                Patient=patient, 
+                Date__lt=appointment_end_time,
+                Date__gte=appointment_date - timedelta(minutes=(duration - 1))
+                )
 
-                if patient_conflict:
-                    appointment.status = 0
+                if overlapping_patient.exists():
+                    appointment.status = "Decline"
                     appointment.save()
-                    return Response(
-                        {"error": "Patient is already booked at this time"},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
+                    return Response({"error": "Patient is already booked at this time"}, status=status.HTTP_400_BAD_REQUEST)
+
 
                 appointment_obj = Appointments.objects.create(
-                    patient=patient,
-                    doctor=doctor,
-                    treatment=appointment.treatment,
-                    notes=appointment.notes,
-                    date=appointment.date,
-                    duration=appointment.duration,
+                    Patient=patient,
+                    Doctor=doctor_instance,
+                    Treatment=appointment.treatment,
+                    Notes=appointment.notes,
+                    Date=appointment_date,
+                    Duration=duration,
                     status=4,
                 )
 
-                appointment.status = 1
+                appointment.status = new_status
                 appointment.save()
 
                 return Response(
@@ -109,64 +121,69 @@ class AppointmentMobileAPIView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, appointment_id):
-        """Delete an appointment."""
-        try:
-            appointment = PatientAppointment.objects.get(id=appointment_id)
-            appointment.delete()
-            return Response({"message": "Appointment deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
-        except PatientAppointment.DoesNotExist:
-            return Response({"error": "Appointment not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+
+    # def delete(self, request, appointment_id):
+    #     """Delete an appointment."""
+    #     try:
+    #         appointment = PatientAppointment.objects.get(id=appointment_id)
+    #         appointment.delete()
+    #         return Response({"message": "Appointment deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+    #     except PatientAppointment.DoesNotExist:
+    #         return Response({"error": "Appointment not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
 class EditAppointmentMobileAPIView(APIView):
 
+    """
+    API to edit doctor and date for a specific appointment.
+
+    """
+
     def put(self, request, appointment_id):
-        """Edit doctor and date for a specific appointment."""
-        try:
-            appointment = PatientAppointment.objects.get(id=appointment_id)
-        except PatientAppointment.DoesNotExist:
-            return Response({"error": "Appointment not found"}, status=status.HTTP_404_NOT_FOUND)
+        """Update the doctor and/or date of an appointment."""
+        appointment = get_object_or_404(PatientAppointment, id=appointment_id)
 
         doctor_firstname = request.data.get("doctor") 
-        new_date = request.data.get("date")
+        new_date_str = request.data.get("date") 
 
+       
         if doctor_firstname:
-            try:
-
-                doctor = Doctor.objects.get(firstname=doctor_firstname)
-                appointment.doc = doctor  
-            except Doctor.DoesNotExist:
+            doctor = Doctor.objects.filter(firstname=doctor_firstname).first()
+            if not doctor:
                 return Response({"error": "Invalid doctor firstname"}, status=status.HTTP_400_BAD_REQUEST)
+            appointment.doc = doctor  
 
-        if new_date:
-            try:
-                appointment.date = new_date 
-            except Exception as e:
-                return Response({"error": f"Invalid date format. {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if new_date_str:
+            parsed_date = parse_datetime(new_date_str)
+            if parsed_date is None:
+                return Response({"error": "Invalid date format"}, status=status.HTTP_400_BAD_REQUEST)
+            appointment.date = parsed_date 
 
         appointment.save()
 
+      
         data = {
             "id": appointment.id,
-            "doctor_name": appointment.doc.firstname if appointment.doc else "No Doctor Assigned", 
-            "appointment_date": appointment.date.strftime('%Y-%m-%d %H:%M:%S')
+            "doctor_name": appointment.doctor.firstname if appointment.doctor else "No Doctor Assigned", 
+            "appointment_date": appointment.date.strftime('%Y-%m-%d %H:%M:%S') 
         }
 
         return Response({"message": "Appointment updated", "data": data}, status=status.HTTP_200_OK)
-        
+
 
 class AppointmentAPIView(APIView):
     """
     View to list all appointments or create a new one.
     """
-
     def get(self, request):
-        appointments = Appointments.objects.all()
-        serializer = AppointmentSerializer(appointments, many=True)
+        appointments = Appointments.objects.exclude(status='Canceled') 
+        serializer = AppointmentGEtSerializer(appointments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
+
         patient_data = request.data.get("patient", {})
         doctor_name = request.data.get("doctor")
         appointment_data = request.data
@@ -175,38 +192,37 @@ class AppointmentAPIView(APIView):
         if appointment_date is None:
             return Response({"error": "Invalid date format"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Ensure the datetime is timezone-aware
+       
         if is_naive(appointment_date):
             appointment_date = make_aware(appointment_date)
 
-        duration = int(appointment_data.get("Duration", 10))  # Assuming duration is in minutes
+        duration = int(appointment_data.get("Duration", 0))
 
+      
         doctor_instance = get_object_or_404(Doctor, firstname=doctor_name)
 
+    
         appointment_end_time = appointment_date + timedelta(minutes=duration)
 
-        # Check if an appointment with the exact same date and time already exists
-        exact_appointment_exists = Appointments.objects.filter(
-            Doctor=doctor_instance,
-            Date=appointment_date
-        ).exists()
-
-        if exact_appointment_exists:
-            return Response({"error": "An appointment with this exact date and time already exists for this doctor."},
-                            status=status.HTTP_400_BAD_REQUEST)
-
-        # Check for overlapping appointments (new appointment must not overlap any existing appointment)
-        overlapping_appointments = Appointments.objects.filter(
+      
+        overlapping_doctor = Appointments.objects.filter(
             Doctor=doctor_instance
         ).filter(
-            Date__lt=appointment_end_time,  # Existing appointment starts before new appointment ends
-            Date__gte=appointment_date      # Existing appointment ends after new appointment starts
+            Q(Date__lt=appointment_end_time, Date__gte=appointment_date) | 
+            Q(Date__lte=appointment_date, Date__gt=appointment_date)
         )
 
-        if overlapping_appointments.exists():
+        overlapping_doctor = Appointments.objects.filter(
+            Doctor=doctor_instance
+        ).filter(
+            Date__lt=appointment_end_time, 
+            Date__gte=appointment_date - timedelta(minutes=(duration-1)), 
+        )
+
+        if overlapping_doctor.exists():
             return Response({"error": "Doctor is not available at this time"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Create or retrieve patient
+       
         patient_instance, created = Patient.objects.get_or_create(
             FirstName=patient_data.get("FirstName"),
             LastName=patient_data.get("LastName"),
@@ -218,12 +234,28 @@ class AppointmentAPIView(APIView):
                 "City": patient_data.get("City"),
             },
         )
+        
+        overlapping_patient = Appointments.objects.filter(
+            Patient=patient_instance
+        ).filter(
+            Q(Date__lt=appointment_end_time, Date__gte=appointment_date) | 
+            Q(Date__lte=appointment_date, Date__gt=appointment_date)
+        )
 
-        # Create the appointment
+        overlapping_patient = Appointments.objects.filter(
+            Patient=patient_instance
+        ).filter(
+            Date__lt=appointment_end_time,
+            Date__gte=appointment_date - timedelta(minutes=(duration-1)),
+        )
+
+        if overlapping_patient.exists():
+            return Response({"error": "Patient is not available at this time"}, status=status.HTTP_400_BAD_REQUEST)
+
         appointment = Appointments.objects.create(
             Patient=patient_instance,
             Doctor=doctor_instance,
-            Date=appointment_date,  # Use aware datetime
+            Date=appointment_date,
             Duration=appointment_data.get("Duration"),
             Repeat=appointment_data.get("Repeat"),
             Treatment=appointment_data.get("Treatment"),
@@ -236,7 +268,25 @@ class AppointmentAPIView(APIView):
             {"message": "Appointment created successfully"},
             status=status.HTTP_201_CREATED,
         )
-     
+        
+        
+# 127.0.0.1:8000/appointment/count/
+class AppointmentTotalCountAPIView(APIView):
+
+    def get(self, request):
+        try:
+            appointmentscount = Appointments.objects.filter()
+            appointment_counts = appointmentscount.count()
+
+            return Response({
+                'total': appointment_counts,
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# http://127.0.0.1:8000/appointment/doctorcount/?doctor_name=Dr. Alice
 class DoctorAppointmentCountAPIView(APIView):
 
     def get(self, request):
@@ -250,9 +300,6 @@ class DoctorAppointmentCountAPIView(APIView):
                 doctor = Doctor.objects.get(firstname=doctor_name)
             except Doctor.DoesNotExist:
                 return Response({'error': 'Doctor not found'}, status=status.HTTP_404_NOT_FOUND)
-            
-            appointmentscount = Appointments.objects.filter()
-            appointment_counts = appointmentscount.count()
 
             appointments = Appointments.objects.filter(Doctor=doctor).exclude(status__in=[1, 0]).values('Date', 'Duration')
             appointment_count = appointments.count()
@@ -273,7 +320,6 @@ class DoctorAppointmentCountAPIView(APIView):
             ]
 
             return Response({
-                'total': appointment_counts,
                 'doctor_name': doctor.firstname,
                 'appointment_count': appointment_count,
                 'appointments': appointment_details
@@ -281,19 +327,29 @@ class DoctorAppointmentCountAPIView(APIView):
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 
-
+# http://127.0.0.1:8000/appointment/appointmentdelete/?patient_name=Akki&mobile_no=9639877890&date=2024-02-05T10:31:00Z
 class AppointmentDeleteView(APIView):
 
     def delete(self, request):
         try:
             patient_name = request.query_params.get('patient_name')
             mobile_no = request.query_params.get('mobile_no')
-            date = request.query_params.get('date')
+            date_str = request.query_params.get('date')
 
-            if not all([patient_name, mobile_no, date]):
+
+            if not all([patient_name, mobile_no, date_str]):
                 return Response(
                     {'error': 'Missing required parameters: patient_name, mobile_no, and date'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+
+            appointment_date = parse_datetime(date_str)
+            if appointment_date is None:
+                return Response(
+                    {'error': 'Invalid date format'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
@@ -310,19 +366,18 @@ class AppointmentDeleteView(APIView):
 
             try:
                 appointment = Appointments.objects.get(
-                    patient=patient,
-                    date=date
+                    Patient=patient,
+                    Date=appointment_date
                 )
+
             except Appointments.DoesNotExist:
                 return Response(
                     {'error': 'Appointment not found'},
                     status=status.HTTP_404_NOT_FOUND
                 )
 
-        
-            appointment.status = 0 
+            appointment.status = 'Canceled'
             appointment.save()
-            # appointment.delete()
 
             return Response(
                 {'message': 'Appointment canceled successfully'},
@@ -342,7 +397,7 @@ class UpdateAppointmentStatusAPIView(APIView):
         try:
             new_status = request.data.get('status')
 
-            if new_status not in [0, 1, 2, 3, 4]: 
+            if new_status not in ['Canceled', 'Done', 'Engaged', 'Waiting', 'Canceled']: 
                 return Response({'error': 'Invalid status value'}, status=status.HTTP_400_BAD_REQUEST)
 
             try:
@@ -350,19 +405,19 @@ class UpdateAppointmentStatusAPIView(APIView):
             except Appointments.DoesNotExist:
                 return Response({'error': 'Appointment not found'}, status=status.HTTP_404_NOT_FOUND)
 
-            if appointment.status == 1:
+            if appointment.status == 'Done':
                 return Response({'done': 'Appointment is already done. It cannot be changed.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            if appointment.status == 2:
-                if new_status not in [1, 0]:
+            if appointment.status == 'Engaged':
+                if new_status not in ['Done']:
                     return Response({'done': 'Engaged appointments can only be changed to Done or Canceled'}, status=status.HTTP_400_BAD_REQUEST)
 
-            if appointment.status == 3: 
+            if appointment.status == 'Waiting': 
                 if new_status != 2:
                     return Response({'done': 'Waiting appointments can only be changed to Engaged'}, status=status.HTTP_400_BAD_REQUEST)
 
-            if appointment.status == 4: 
-                if new_status not in [2, 3]: 
+            if appointment.status == 'Scheduled': 
+                if new_status not in ['Engaged', 'Waiting']: 
                     return Response({'done': 'Scheduled appointments can only be changed to Engaged or Waiting'}, status=status.HTTP_400_BAD_REQUEST)
 
             appointment.status = new_status
@@ -378,4 +433,15 @@ class UpdateAppointmentStatusAPIView(APIView):
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+class UpcomingAppointmentsAPIView(APIView):
+    def get(self, request):
+        appointments = Appointments.objects.filter(
+            Date__gte=now(), status__in=['Engaged', 'Waiting', 'Scheduled']
+        ).order_by("Date")
+
+        serializer = AppointmentGEtSerializer(appointments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
         
