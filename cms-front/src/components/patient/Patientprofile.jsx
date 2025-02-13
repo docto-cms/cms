@@ -4,9 +4,22 @@ import { GrView } from "react-icons/gr";
 import { MdOutlineModeEdit } from "react-icons/md";
 import axios from "axios";
 
-const PatientProfile = ({ patient, onSaveChanges, isEditing, setIsEditing }) => {
+const PatientProfile = ({ patient, onSaveChanges, isEditing, setIsEditing, doctors }) => {
 
 
+  const [doctor, setdoctor] = useState()
+  
+
+  const dd= doctors.find((doc)=> doc.id === patient.Doctor)
+
+  console.log(dd.firstname);
+  
+  
+
+  // console.log('sddd',ddd);
+  
+
+  
   
   const [formData, setFormData] = useState({
     RegistrationId: patient.RegistrationId || "",
@@ -123,7 +136,7 @@ const PatientProfile = ({ patient, onSaveChanges, isEditing, setIsEditing }) => 
           <div className="space-y-2">
             {/* First Name */}
             <div className="flex">
-              <span className="font-semibold text-gray-700 w-40">First Name</span>
+      <span className="font-semibold text-gray-700 w-40">First Name </span>
               <span className="font-semibold">:</span>
               {isEditing ? (
                 <input
@@ -184,11 +197,16 @@ const PatientProfile = ({ patient, onSaveChanges, isEditing, setIsEditing }) => 
               <option value="" disabled>
                 Select Doctor
               </option>
-              <option value="jithin">Dr. Jithin</option>
-              <option value="john">Dr. John</option>
+              {doctors.map((item)=>
+                (
+                  <option value={item.id} key={item.id}>
+                      {item.firstname}
+                  </option>
+                ))}
+             
             </select>
               ) : (
-                <span className="ml-2">{patient.Doctor}</span>
+                <span className="ml-2">{dd.firstname}</span>
               )}
             </div> 
 
