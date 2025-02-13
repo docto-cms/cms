@@ -53,25 +53,18 @@ export default function LoginForm() {
     e.preventDefault();
     if (validateForm()) {
       try {
-       const response = await postData("login", formData);
-          
-
-        setMessage("Registration successful!");
-        console.log("Response from backend:", response.data);
-
-        // Reset form on successful submission
-        setFormData({
-          email: "",
-          password: "",
-          clinic_id: "",
-        });
-
-      
-
+        const response = await postData("login", formData);
+        setMessage("Login successful!"); // Update message to "Login"
+        console.log("Response from backend:", response); // Removed .data
+  
+        // Redirect user or store tokens (example using navigation)
+        // navigate("/dashboard"); 
+  
+        setFormData({ email: "", password: "", clinic_id: "" });
         setErrors({});
       } catch (error) {
         console.error("Error submitting form:", error);
-        setMessage("An error occurred. Please try again.");
+        setMessage("Login failed. Please check your credentials.");
       }
     }
   };
