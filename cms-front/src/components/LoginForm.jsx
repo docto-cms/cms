@@ -1,14 +1,19 @@
 import { useState } from "react";
 import React from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { postData } from "../API/Axios"; // Adjust the import path accordingly
 
 export default function LoginForm() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    clinicId: "",
+    clinic_id: "",
   });
 
   const [errors, setErrors] = useState({});
+  const [message, setMessage] = useState(""); // Define message state
+  const navigate = useNavigate(); // Initialize navigation
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,29 +41,34 @@ export default function LoginForm() {
     }
 
     // Clinic ID validation
-    if (!formData.clinicId) {
-      newErrors.clinicId = "Clinic ID is required";
+    if (!formData.clinic_id) {
+      newErrors.clinic_id = "Clinic ID is required";
     }
 
     setErrors(newErrors);
-
-    return Object.keys(newErrors).length === 0; // Return true if no errors
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (validateForm()) {
-      console.log("Form Submitted Successfully:", formData);
-      alert("Login successful!");
-
-      // Reset form
-      setFormData({
-        email: "",
-        password: "",
-        clinicId: "",
-      });
-      setErrors({});
+      try {
+        const response = await postData("login", formData);
+        setMessage("Login successful!"); // Update message to "Login"
+        console.log("Response from backend:", response); // Removed .data
+  
+        // Redirect user or store tokens (example using navigation)
+        // navigate("/dashboard"); 
+  
+        setFormData({ email: "", password: "", clinic_id: "" });
+        setTimeout(() => {
+          navigate("/");
+        }, 1000);
+        setErrors({});
+      } catch (error) {
+        console.error("Error submitting form:", error);
+        setMessage("Login failed. Please check your credentials.");
+      }
     }
   };
 
@@ -68,15 +78,16 @@ export default function LoginForm() {
         onSubmit={handleSubmit}
         className="bg-white p-6 rounded shadow-md w-96 space-y-4"
       >
-        <label
-          htmlFor=""
-          className="text-2xl text-center font-bold mb-4 block"
-        >
+        <label className="text-2xl text-center font-bold mb-4 block">
           Let’s get started
         </label>
 
+        {message && <p className="text-green-500 text-center">{message}</p>}
+
         <div>
-          <label className="block text-sm font-medium text-gray-700">Email</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Email
+          </label>
           <input
             type="email"
             name="email"
@@ -92,7 +103,9 @@ export default function LoginForm() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Password</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Password
+          </label>
           <input
             type="password"
             name="password"
@@ -113,15 +126,15 @@ export default function LoginForm() {
           </label>
           <input
             type="text"
-            name="clinicId"
-            value={formData.clinicId}
+            name="clinic_id"
+            value={formData.clinic_id}
             onChange={handleChange}
             placeholder="clinic ID"
             className="mt-1 p-2 border border-gray-300 rounded w-full"
             required
           />
-          {errors.clinicId && (
-            <p className="text-red-500 text-sm mt-1">{errors.clinicId}</p>
+          {errors.clinic_id && (
+            <p className="text-red-500 text-sm mt-1">{errors.clinic_id}</p>
           )}
         </div>
 

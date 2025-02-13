@@ -14,7 +14,6 @@ import {
   FaLifeRing,
   FaUsers,
 } from "react-icons/fa";
-import Dashboard from "@/pages/Dashboard";
 import Navbar from "../Navbar";
 
 export default function Sidebar1() {
@@ -24,17 +23,18 @@ export default function Sidebar1() {
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
+  const hi = sessionStorage.getItem('hello')
+  console.log(hi);
 
   return (
     <div className="flex font-poppins">
-      {/* Sidebar Container */}
+      {/* Sidebar */}
       <div
         className={`fixed top-0 left-0 h-screen bg-white shadow-lg transition-all duration-300 ${
           SidebarOpen ? "w-64" : "w-20"
         }`}
       >
         <Sidebar collapsed={!SidebarOpen} style={{ height: "100vh" }}>
-          {/* Profile Section */}
           <div className="flex flex-col items-center pb-6 bg-teal-600 text-white transition-all duration-300">
             {SidebarOpen && (
               <h2 className="m-4 text-center text-sm font-extrabold">
@@ -56,18 +56,17 @@ export default function Sidebar1() {
             )}
           </div>
 
-          {/* Menu Section */}
+          {/* Sidebar Menu */}
           <Menu className="text-black">
             {[
               { name: "Dashboard", icon: <FaHome />, path: "/" },
-              { name: "Today Patient", icon: <FaUserCheck/>, path: "/today-patient" },
+              { name: "Today Patient", icon: <FaUserCheck />, path: "/today-patient" },
               { name: "Add Patients", icon: <FaUserPlus />, path: "/add-patients" },
               { name: "Quick Entry", icon: <FaUsers />, path: "/quick-entry" },
               { name: "Search Patient", icon: <FaSearch />, path: "/search-patient" },
               { name: "Appointments", icon: <FaCalendarAlt />, path: "/appointments" },
-              { name: "Add Appointment",icon :<FaCalendarCheck/>, path: "/add-appointment" },
+              { name: "Add Appointment", icon: <FaCalendarCheck />, path: "/add-appointment" },
               { name: "Website Appointment", icon: <FaClinicMedical />, path: "/website-appointment" },
-              // { name: "Pharmacy", icon: <FaPills />, path: "/pharmacy" },
               { name: "Support", icon: <FaLifeRing />, path: "/support" },
             ].map((item) => (
               <MenuItem
@@ -87,19 +86,15 @@ export default function Sidebar1() {
         </Sidebar>
       </div>
 
-      {/* Main Content Area */}
+      {/* Main Content */}
       <div
         className={`flex-grow flex flex-col transition-all duration-300 ${
           SidebarOpen ? "ml-64" : "ml-20"
         }`}
       >
-        
         <Navbar toggleSidebar={toggleSidebar} SidebarOpen={SidebarOpen} />
-        {/* Main Content (Pushes down due to Navbar) */}
-        <div className="flex-grow  bg-gray-100 mt-14">
-
-          {selectedMenu === "Dashboard" && <Dashboard />}
-          <Outlet />
+        <div className="flex-grow bg-gray-100 mt-14 p-4">
+          <Outlet /> {/* ✅ This ensures nested routes render inside Sidebar */}
         </div>
       </div>
     </div>

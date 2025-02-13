@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
+
 // Create an Axios instance
 const axiosInstance = axios.create({
   baseURL: 'http://127.0.0.1:8000', // Replace with your API base URL
