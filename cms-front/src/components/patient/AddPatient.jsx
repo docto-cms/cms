@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function AddPatient() {
@@ -41,6 +41,15 @@ export default function AddPatient() {
       alert(`Error: ${JSON.stringify(error.response?.data || "Something went wrong")}`);
     }
   };
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const res = await axios.get()
+      }
+    }
+  })
+  
 
   return (
     <div>
@@ -153,15 +162,17 @@ export default function AddPatient() {
         </div>
         <div>
           <label className="block text-sm font-bold text-gray-700">Doctor</label>
-          <input
-            type="text"
+          <select type="text"
             name="Doctor"
             value={formData.Doctor}
             onChange={handleInputChange}
             placeholder="Enter Doctor"
             required
-            className="mt-2 p-3 border border-gray-300 rounded-lg w-full"
-          />
+            className="mt-2 p-3 border border-gray-300 rounded-lg w-full">
+            <option value="" disabled>Select Doctor</option>
+            <option value="Dr. A">Dr. A</option>
+            
+            </select>
         </div>
       </div>
 

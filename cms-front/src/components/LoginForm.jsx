@@ -61,6 +61,9 @@ export default function LoginForm() {
         // navigate("/dashboard"); 
   
         setFormData({ email: "", password: "", clinic_id: "" });
+        setTimeout(() => {
+          navigate("/");
+        }, 1000);
         setErrors({});
       } catch (error) {
         console.error("Error submitting form:", error);
