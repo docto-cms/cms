@@ -12,9 +12,9 @@ class Doctor(models.Model):
 class Patient(models.Model):
 
     Gender_Choices = [
-        ('M','Male'),
-        ('F','Female'),
-        ('O','Other')
+        ('Male','Male'),
+        ('Female','Female'),
+        ('Other','Other')
     ]
 
     RegistrationId = models.AutoField(unique=True,primary_key=True)
@@ -30,5 +30,5 @@ class Patient(models.Model):
     Fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     FeeType = models.CharField(max_length=100)
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.RegistrationId} {self.FirstName} {self.LastName}"

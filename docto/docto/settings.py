@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'appointment',
     'Patient',
     'rest_framework',
+    'corsheaders',
     
 ]
 
@@ -52,7 +53,16 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # Allow frontend access
+]
+
+CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins
+CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"]
+CORS_ALLOW_HEADERS = ["*"]  # Allow all headers
+
 
 ROOT_URLCONF = 'docto.urls'
 
