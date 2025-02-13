@@ -33,6 +33,8 @@ export default function AddPatient() {
     paymentType: "",
   });
 
+
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewPatient((prev) => ({ ...prev, [name]: value }));
