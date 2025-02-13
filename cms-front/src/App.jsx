@@ -34,6 +34,7 @@ function App() {
           <Route path="add-appointment" element={<AddAppointmentPage />} />
           <Route path="search-patient" element={<SearchPatientPage />} />
           <Route path="doctor-profile" element={<DoctorProfile />} />
+          <Route path="*" element={<h1>Not Found</h1>} />
         </Route>
       </Routes>
     </Router>
