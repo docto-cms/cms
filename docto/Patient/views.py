@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Patient
 from .serializers import *
+from .models import Doctor
 
 class PatientDetailAPIView(APIView):
 
@@ -18,6 +19,7 @@ class PatientDetailAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
+        doctor= Doctor.objects.all()
         serializer = PatientSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()

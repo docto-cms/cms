@@ -1,7 +1,6 @@
 from django.db import models
 from Patient.models import *
 
-
 #mobile
 class PatientAppointment(models.Model):
     first_name = models.CharField(max_length=255)
