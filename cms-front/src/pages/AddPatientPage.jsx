@@ -1,10 +1,11 @@
-import AddPatient from '@/components/patient/AddPatient'
+
+import WithPatient from '@/components/patient/WithPatient'
 import React from 'react'
 
 export default function AddPatientPage() {
   return (
     <div>
-      <AddPatient/>
+     <WithPatient/>
     </div>
   )
 }

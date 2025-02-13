@@ -4,9 +4,9 @@ from django.db import models
 class Patient(models.Model):
 
     Gender_Choices = [
-        ('M','Male'),
-        ('F','Female'),
-        ('O','Other')
+        ('Male','Male'),
+        ('Female','Female'),
+        ('Other','Other')
     ]
 
     RegistrationId = models.AutoField(unique=True,primary_key=True)
@@ -20,8 +20,6 @@ class Patient(models.Model):
     Doctor = models.CharField(max_length=100)
     RefferedBy = models.CharField(max_length=100)
     Fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    ConsultationFee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True
-    )
     FeeType = models.CharField(max_length=100)
 
     def _str_(self):
