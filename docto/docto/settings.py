@@ -41,10 +41,12 @@ INSTALLED_APPS = [
     'appointment',
     'Patient',
     'rest_framework',
+    'corsheaders', 
     
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware', 
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -133,3 +135,18 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# CORS Configuration
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # Allow React Vite frontend
+]
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+ # Allow credentials like cookies, JWT, etc.
+
+# Ensure you have the CORS middleware installed
+# INSTALLED_APPS += ["corsheaders"]
+
+# MIDDLEWARE.insert(1, "corsheaders.middleware.CorsMiddleware")  # Add CORS middleware
+
