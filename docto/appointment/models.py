@@ -10,7 +10,7 @@ class Doctor(models.Model):
     def __str__(self):
         return self.firstname
 
-
+#mobile
 class PatientAppointment(models.Model):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
