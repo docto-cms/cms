@@ -10,6 +10,4 @@ class BasicInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Patient
         fields = ['RegistrationId','FirstName','LastName','PhoneNumber','Age','Gender','Doctor']
-
-
     
