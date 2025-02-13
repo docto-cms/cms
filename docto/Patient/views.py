@@ -10,7 +10,9 @@ class PatientDetailAPIView(APIView):
 
     def get(self, request, pk=None):
         if pk is None:  # List all patients
+            doctor=Doctor.objects.get()
             patients = Patient.objects.all()
+
             serializer = PatientSerializer(patients, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:  # Retrieve a single patient
@@ -19,7 +21,6 @@ class PatientDetailAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
-        doctor= Doctor.objects.all()
         serializer = PatientSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -77,3 +78,10 @@ class BasicInfoAPIView(APIView):
                 },
                 status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class DoctorDetailAPIView(APIView):
+    def get(self,request):
+        doctor=Doctor.objects.all()
+        serializer=DocterSerializer(doctor,many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+    
