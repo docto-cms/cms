@@ -10,6 +10,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.utils.translation import gettext_lazy as _
 from .models import *
 from django.contrib.auth.hashers import check_password
+from django.utils import timezone
+from django.core.mail import send_mail
+import random
 
 
 class RegisterView(APIView):
@@ -173,3 +176,53 @@ class ChangePassword(APIView):
         user.password=make_password(new_password)
         user.save()
         return Response({"detail": "Password successfully changed."}, status=status.HTTP_200_OK)
+
+class send_otp(APIView):
+    def post(self,request):
+        """ Generates and sends an OTP for email verification before user creation """
+        email = request.data.get("email")
+
+        if not email:
+            return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Remove any existing OTPs for this email
+        OtpToken.objects.filter(email=email).delete()
+
+        # Generate a new OTP
+        otp_code = str(random.randint(100000, 999999))  # 6-digit OTP
+        otp = OtpToken.objects.create(email=email, otp_code=otp_code, otp_expires_at=timezone.now() + timezone.timedelta(minutes=5))
+
+        # Send OTP email
+        send_mail(
+            subject="Your OTP Code",
+            message=f"Your OTP code is {otp.otp_code}. It expires in 5 minutes.",
+            from_email="your-email@gmail.com",
+            recipient_list=[email],
+            fail_silently=False
+        )
+
+        return Response({"message": "OTP sent to email"}, status=status.HTTP_200_OK)
+    
+class forgotPassword(APIView):
+    def post(self,request):
+        email = request.data.get("email")
+        new_password = request.data.get("new_password")
+        otp_code = request.data.get("otp_code")
+
+        if not email or not new_password or not otp_code:
+            return Response({"error": "All fields are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            otp = OtpToken.objects.get(email=email, otp_code=otp_code)
+        except OtpToken.DoesNotExist:
+            return Response({"error": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if timezone.now() > otp.otp_expires_at:
+            return Response({"error": "OTP has expired"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.get(email=email)
+        user.password = make_password(new_password)
+        user.save()
+
+        return Response({"message": "Password reset successfully"}, status=status.HTTP_200_OK)
+    
