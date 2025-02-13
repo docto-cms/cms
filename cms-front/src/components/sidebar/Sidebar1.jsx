@@ -23,6 +23,8 @@ export default function Sidebar1() {
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
+  const hi = sessionStorage.getItem('hello')
+  console.log(hi);
 
   return (
     <div className="flex font-poppins">

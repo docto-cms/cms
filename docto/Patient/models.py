@@ -12,9 +12,9 @@ class Doctor(models.Model):
 class Patient(models.Model):
 
     Gender_Choices = [
-        ('M','Male'),
-        ('F','Female'),
-        ('O','Other')
+        ('Male','Male'),
+        ('Female','Female'),
+        ('Other','Other')
     ]
 
     RegistrationId = models.AutoField(unique=True,primary_key=True)
