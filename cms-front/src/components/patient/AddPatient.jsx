@@ -42,13 +42,13 @@ export default function AddPatient() {
     }
   };
 
-  useEffect(() => {
-    const fetchDoctors = async () => {
-      try {
-        const res = await axios.get()
-      }
-    }
-  })
+  // useEffect(() => {
+  //   const fetchDoctors = async () => {
+  //     try {
+  //       const res = await axios.get()
+  //     }
+  //   }
+  // })
   
 
   return (
