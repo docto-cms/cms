@@ -11,3 +11,7 @@ class BasicInfoSerializer(serializers.ModelSerializer):
         model = Patient
         fields = ['RegistrationId','FirstName','LastName','PhoneNumber','Age','Gender','Doctor']
     
+class DocterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Doctor
+        fields='__all__'

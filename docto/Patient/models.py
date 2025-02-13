@@ -25,7 +25,7 @@ class Patient(models.Model):
     Age = models.IntegerField(null=True)
     Gender = models.CharField(max_length=100, choices=Gender_Choices)
     City=models.CharField(max_length=100)
-    Doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
+    Doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE ,null=True)
     RefferedBy = models.CharField(max_length=100)
     Fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     FeeType = models.CharField(max_length=100)
