@@ -50,8 +50,8 @@ class Migration(migrations.Migration):
                 ('notes', models.TextField(blank=True, null=True)),
                 ('date', models.DateTimeField()),
                 ('duration', models.IntegerField(default=15)),
-                ('status', models.IntegerField(choices=[(0, 'Decline'), (1, 'Accept'), (2, 'Waiting')], default=2)),
-                ('doc', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='patientappoinments', to='appointment.doctor')),
+                ('status', models.CharField(choices=[('Decline', 'Decline'), ('Accept', 'Accept'), ('Waiting', 'Waiting')], default='Waiting', max_length=50)),
+                ('doctor', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='appointment.doctor')),
             ],
         ),
     ]
