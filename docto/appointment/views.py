@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import *
 from .serializers import *
-from Patient.models import Patient
+from Patient.models import *
 from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import is_naive, make_aware
@@ -48,15 +48,18 @@ class AppointmentMobileAPIView(APIView):
             new_status = serializer.validated_data.get("status")
 
             if new_status == "Accept":
+                if not appointment.doctor:
+                    return Response({"error": "Doctor field is missing in appointment"}, status=status.HTTP_400_BAD_REQUEST)
+
                 doctor_name = appointment.doctor
                 appointment_date = appointment.date
                 if appointment_date is None:
                     return Response({"error": "Invalid date format"}, status=status.HTTP_400_BAD_REQUEST)
-                
-                duration = appointment.duration 
+
+                duration = appointment.duration
 
                 doctor_instance = get_object_or_404(Doctor, firstname=doctor_name)
-                
+
                 if is_naive(appointment_date):
                     appointment_date = make_aware(appointment_date)
 
@@ -71,26 +74,27 @@ class AppointmentMobileAPIView(APIView):
                 if overlapping_doctor.exists():
                     return Response({"error": "Doctor is not available at this time"}, status=status.HTTP_400_BAD_REQUEST)
 
+                # Ensure doctor_instance is included while creating the patient
                 patient, created = Patient.objects.get_or_create(
                     Email=appointment.email,
                     defaults={
                         "FirstName": appointment.first_name,
                         "LastName": appointment.last_name,
                         "PhoneNumber": appointment.mobile_number,
+                        "Doctor": doctor_instance,  # Ensure this field is assigned
                     },
                 )
 
                 overlapping_patient = Appointments.objects.filter(
-                Patient=patient, 
-                Date__lt=appointment_end_time,
-                Date__gte=appointment_date - timedelta(minutes=(duration - 1))
+                    Patient=patient,
+                    Date__lt=appointment_end_time,
+                    Date__gte=appointment_date - timedelta(minutes=(duration - 1))
                 )
 
                 if overlapping_patient.exists():
                     appointment.status = "Decline"
                     appointment.save()
                     return Response({"error": "Patient is already booked at this time"}, status=status.HTTP_400_BAD_REQUEST)
-
 
                 appointment_obj = Appointments.objects.create(
                     Patient=patient,
@@ -99,7 +103,7 @@ class AppointmentMobileAPIView(APIView):
                     Notes=appointment.notes,
                     Date=appointment_date,
                     Duration=duration,
-                    status=4,
+                    status="Accept",
                 )
 
                 appointment.status = new_status
@@ -134,27 +138,24 @@ class AppointmentMobileAPIView(APIView):
 
 
 class EditAppointmentMobileAPIView(APIView):
-
     """
     API to edit doctor and date for a specific appointment.
-
     """
 
     def put(self, request, appointment_id):
         """Update the doctor and/or date of an appointment."""
         appointment = get_object_or_404(PatientAppointment, id=appointment_id)
 
-        doctor_firstname = request.data.get("doctor") 
+        doctor = request.data.get("doctor") 
         new_date_str = request.data.get("date") 
 
-       
-        if doctor_firstname:
-            doctor = Doctor.objects.filter(firstname=doctor_firstname).first()
+        
+        if doctor:
+            doctor = Doctor.objects.filter(id=doctor).first()
             if not doctor:
                 return Response({"error": "Invalid doctor firstname"}, status=status.HTTP_400_BAD_REQUEST)
-            appointment.doc = doctor  
+            appointment.doctor = doctor  
 
-        
         if new_date_str:
             parsed_date = parse_datetime(new_date_str)
             if parsed_date is None:
@@ -163,7 +164,6 @@ class EditAppointmentMobileAPIView(APIView):
 
         appointment.save()
 
-      
         data = {
             "id": appointment.id,
             "doctor_name": appointment.doctor.firstname if appointment.doctor else "No Doctor Assigned", 
@@ -171,7 +171,7 @@ class EditAppointmentMobileAPIView(APIView):
         }
 
         return Response({"message": "Appointment updated", "data": data}, status=status.HTTP_200_OK)
-
+    
 
 class AppointmentAPIView(APIView):
     """
@@ -179,13 +179,13 @@ class AppointmentAPIView(APIView):
     """
     def get(self, request):
         appointments = Appointments.objects.exclude(status='Canceled') 
-        serializer = AppointmentGEtSerializer(appointments, many=True)
+        serializer = AppointmentGetSerializer(appointments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
 
-        patient_data = request.data.get("patient", {})
-        doctor_name = request.data.get("doctor")
+        patient_data = request.data.get("Patient", {})
+        doctor_name = request.data.get("Doctor")
         appointment_data = request.data
 
         appointment_date = parse_datetime(appointment_data.get("Date"))
@@ -199,7 +199,7 @@ class AppointmentAPIView(APIView):
         duration = int(appointment_data.get("Duration", 0))
 
       
-        doctor_instance = get_object_or_404(Doctor, firstname=doctor_name)
+        doctor_instance = get_object_or_404(Doctor, id=doctor_name)
 
     
         appointment_end_time = appointment_date + timedelta(minutes=duration)
@@ -223,7 +223,7 @@ class AppointmentAPIView(APIView):
             return Response({"error": "Doctor is not available at this time"}, status=status.HTTP_400_BAD_REQUEST)
 
        
-        patient_instance, created = Patient.objects.get_or_create(
+        patient_instance, _ = Patient.objects.get_or_create(
             FirstName=patient_data.get("FirstName"),
             LastName=patient_data.get("LastName"),
             defaults={
@@ -252,17 +252,19 @@ class AppointmentAPIView(APIView):
         if overlapping_patient.exists():
             return Response({"error": "Patient is not available at this time"}, status=status.HTTP_400_BAD_REQUEST)
 
+        
         appointment = Appointments.objects.create(
-            Patient=patient_instance,
+            Patient=patient_instance,  
             Doctor=doctor_instance,
             Date=appointment_date,
-            Duration=appointment_data.get("Duration"),
+            Duration=duration,
             Repeat=appointment_data.get("Repeat"),
             Treatment=appointment_data.get("Treatment"),
             AppointmentType=appointment_data.get("AppointmentType"),
             Notes=appointment_data.get("Notes"),
             GoogleMeetLink=appointment_data.get("GoogleMeetLink"),
         )
+
 
         return Response(
             {"message": "Appointment created successfully"},
@@ -397,7 +399,7 @@ class UpdateAppointmentStatusAPIView(APIView):
         try:
             new_status = request.data.get('status')
 
-            if new_status not in ['Canceled', 'Done', 'Engaged', 'Waiting', 'Canceled']: 
+            if new_status not in ['Canceled', 'Done', 'Engaged', 'Waiting', 'Scheduled']: 
                 return Response({'error': 'Invalid status value'}, status=status.HTTP_400_BAD_REQUEST)
 
             try:
@@ -441,7 +443,7 @@ class UpcomingAppointmentsAPIView(APIView):
             Date__gte=now(), status__in=['Engaged', 'Waiting', 'Scheduled']
         ).order_by("Date")
 
-        serializer = AppointmentGEtSerializer(appointments, many=True)
+        serializer = AppointmentGetSerializer(appointments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
         

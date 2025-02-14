@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-export default function AddPatient() {
+export default function AddPatient({setDoctors, doctors, setisupdated,isupdated}) {
+  
+  const [loadingDoctors, setLoadingDoctors] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
+ 
   const [formData, setFormData] = useState({
     FirstName: "",
     LastName: "",
@@ -11,12 +15,12 @@ export default function AddPatient() {
     Gender: "",
     City: "",
     Doctor: "",
-    RefferedBy: "",
+    ReferredBy: "",
     Fee: "",
     FeeType: "",
   });
 
-  console.log(formData);
+  console.log(formData)
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -34,22 +38,36 @@ export default function AddPatient() {
         "http://127.0.0.1:8000/Patient/patients/",
         formData
       );
-      console.log("Response:", response.data);//
+      setisupdated(!isupdated)
+      
+      console.log("Response:", response.data);
       alert("Patient Added Successfully");
+
     } catch (error) {
       console.error("Error Adding Patient:", error.response?.data || error.message);
       alert(`Error: ${JSON.stringify(error.response?.data || "Something went wrong")}`);
     }
   };
 
-  // useEffect(() => {
-  //   const fetchDoctors = async () => {
-  //     try {
-  //       const res = await axios.get()
-  //     }
-  //   }
-  // })
-  
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const res = await axios.get("http://127.0.0.1:8000/Patient/doctor/");
+        setDoctors(res.data);
+        setLoadingDoctors(false);
+      } catch (error) {
+        console.error("Error fetching doctors:", error);
+        setFetchError("Failed to fetch doctors");
+        setLoadingDoctors(false);
+      }
+    };
+    fetchDoctors();
+  }, []);
+
+  // Log the updated doctors state
+  useEffect(() => {
+    console.log("Updated doctors:", doctors);
+  }, [doctors]);
 
   return (
     <div>
@@ -82,7 +100,7 @@ export default function AddPatient() {
         <div>
           <label className="block text-sm font-bold text-gray-700">Phone Number</label>
           <input
-            type="text" // Changed to text input
+            type="text"
             name="PhoneNumber"
             value={formData.PhoneNumber}
             onChange={handleInputChange}
@@ -152,8 +170,8 @@ export default function AddPatient() {
           <label className="block text-sm font-bold text-gray-700">Referred by</label>
           <input
             type="text"
-            name="RefferedBy"
-            value={formData.RefferedBy}
+            name="ReferredBy"
+            value={formData.ReferredBy}
             onChange={handleInputChange}
             placeholder="Referred by"
             required
@@ -162,17 +180,23 @@ export default function AddPatient() {
         </div>
         <div>
           <label className="block text-sm font-bold text-gray-700">Doctor</label>
-          <select type="text"
+          <select
             name="Doctor"
             value={formData.Doctor}
             onChange={handleInputChange}
-            placeholder="Enter Doctor"
+            className="mt-2 p-3 border border-gray-300 rounded-lg w-full"
             required
-            className="mt-2 p-3 border border-gray-300 rounded-lg w-full">
-            <option value="" disabled>Select Doctor</option>
-            <option value="Dr. A">Dr. A</option>
-            
-            </select>
+            // disabled={loadingDoctors || fetchError}
+          >
+            <option >Select Doctor</option>
+            {loadingDoctors && <option>Loading doctors...</option>}
+            {fetchError && <option>{fetchError}</option>}
+            {doctors.map((doctor) => (
+              <option key={doctor.id} value={doctor.id}>
+                {doctor.firstname} {doctor.lastname}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
