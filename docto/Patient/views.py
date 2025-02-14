@@ -9,8 +9,7 @@ from .models import Doctor
 class PatientDetailAPIView(APIView):
 
     def get(self, request, pk=None):
-        if pk is None:  # List all patients
-            doctor=Doctor.objects.get()
+        if pk is None:  
             patients = Patient.objects.all()
 
             serializer = PatientSerializer(patients, many=True)
