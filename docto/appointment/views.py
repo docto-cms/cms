@@ -58,7 +58,7 @@ class AppointmentMobileAPIView(APIView):
 
                 duration = appointment.duration
 
-                doctor_instance = get_object_or_404(Doctor, id=doctor_name)
+                doctor_instance = get_object_or_404(Doctor, firstname=doctor_name)
 
                 if is_naive(appointment_date):
                     appointment_date = make_aware(appointment_date)
