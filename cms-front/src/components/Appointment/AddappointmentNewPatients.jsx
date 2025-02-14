@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import AddappointmentWithpatient from "./AddappointmentWithpatient";
 
-const AddappointmentNewpatient = () => {
+const AddappointmentNewpatients = () => {
   const [switchAppointment, setSwitchAppointment] = useState(true);
 
   return (
@@ -171,4 +171,4 @@ const AddappointmentNewpatient = () => {
   );
 };
 
-export default AddappointmentNewpatient;
+export default AddappointmentNewpatients;
