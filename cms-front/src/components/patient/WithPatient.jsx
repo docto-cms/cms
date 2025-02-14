@@ -8,7 +8,7 @@ export default function WithPatient() {
    const [doctors, setDoctors] = useState([]);
   
   const [isEditing, setIsEditing] = useState(false);
-  
+  const [isupdated, setisupdated] =useState(false)
   
   const initialPatients = [
     {
@@ -24,7 +24,6 @@ export default function WithPatient() {
       FeeType: ""
     }
   ];
-  sessionStorage.setItem('hello', 'token')
 
   
 
@@ -46,11 +45,14 @@ export default function WithPatient() {
   useEffect(() => {
     const fetchData = async () => {
       const response = await axios.get("http://127.0.0.1:8000/Patient/patients/");
-      console.log("response:", response.data);
+      // console.log("response:", response.data);
+      console.log('rendered');
+      
       setPatients(response.data);
+      
     };
     fetchData();
-  }, []);
+  }, [isupdated]);
 
   const [id, setId] = useState();
 
@@ -58,7 +60,7 @@ export default function WithPatient() {
   useEffect(() => 
     {
       const hi = patients.find((patient) => patient.RegistrationId === selectedPatientId);
-      console.log("hi:",hi);
+      // console.log("hi:",hi);
       setId(hi);
     }, [selectedPatientId]);
 
@@ -184,12 +186,13 @@ export default function WithPatient() {
           </div>
         ) : (
           <AddPatient
-          doctors ={doctors}
-            
+            doctors ={doctors} 
             setDoctors={setDoctors}
             newPatient={newPatient}
             handleInputChange={handleInputChange}
             handleSavePatient={handleSavePatient}
+            isupdated={isupdated}
+            setisupdated={setisupdated}
 
           />
         )}
