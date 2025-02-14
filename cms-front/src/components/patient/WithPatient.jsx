@@ -5,7 +5,7 @@ import axios from 'axios';
 
 export default function WithPatient() {
   const [isWithPatient, setIsWithPatient] = useState(false);
-
+   const [doctors, setDoctors] = useState([]);
   
   const [isEditing, setIsEditing] = useState(false);
   
@@ -174,6 +174,7 @@ export default function WithPatient() {
 
             {selectedPatientId && (
               <Patientprofile
+                doctors ={doctors}
                 isEditing={isEditing}
                 setIsEditing={setIsEditing}
                 patient={patients.find((patient) => patient.RegistrationId === selectedPatientId)}
@@ -183,9 +184,13 @@ export default function WithPatient() {
           </div>
         ) : (
           <AddPatient
+          doctors ={doctors}
+            
+            setDoctors={setDoctors}
             newPatient={newPatient}
             handleInputChange={handleInputChange}
             handleSavePatient={handleSavePatient}
+
           />
         )}
       </div>
