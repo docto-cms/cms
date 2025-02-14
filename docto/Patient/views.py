@@ -8,7 +8,7 @@ from .serializers import *
 class PatientDetailAPIView(APIView):
 
     def get(self, request, pk=None):
-        if pk is None:  # List all patients
+        if pk is None:  
             patients = Patient.objects.all()
 
             serializer = PatientSerializer(patients, many=True)
