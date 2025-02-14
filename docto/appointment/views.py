@@ -136,6 +136,7 @@ class AppointmentMobileAPIView(APIView):
     #     except PatientAppointment.DoesNotExist:
     #         return Response({"error": "Appointment not found"}, status=status.HTTP_404_NOT_FOUND)
 
+
 class EditAppointmentMobileAPIView(APIView):
     """
     API to edit doctor and date for a specific appointment.
@@ -198,7 +199,7 @@ class AppointmentAPIView(APIView):
         duration = int(appointment_data.get("Duration", 0))
 
       
-        doctor_instance = get_object_or_404(Doctor, firstname=doctor_name)
+        doctor_instance = get_object_or_404(Doctor, id=doctor_name)
 
     
         appointment_end_time = appointment_date + timedelta(minutes=duration)

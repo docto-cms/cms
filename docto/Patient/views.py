@@ -13,7 +13,7 @@ class PatientDetailAPIView(APIView):
 
             serializer = PatientSerializer(patients, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        else:  # Retrieve a single patient
+        else:  
             patient = get_object_or_404(Patient, pk=pk)
             serializer = PatientSerializer(patient)
             return Response(serializer.data, status=status.HTTP_200_OK)
