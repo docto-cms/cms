@@ -22,7 +22,7 @@ export default function AddPatient({setDoctors, doctors, setisupdated,isupdated}
 
   console.log(formData)
 
-
+  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({

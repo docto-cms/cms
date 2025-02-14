@@ -1,11 +1,9 @@
 import React from "react";
-
 const AppointmentForm = () => {
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 w-[500px]">
       <div className="w-full max-w-3xl bg-white shadow-md rounded-lg p-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">New Appointments</h2>
-
         {/* Tabs */}
         <div className="flex border-b gap-4 mb-4">
         <button className="text-blue-500 font-medium border-b-2 border-blue-500">
@@ -15,7 +13,6 @@ const AppointmentForm = () => {
             New Patient
           </button>
         </div>
-
         {/* Form */}
         <form className="space-y-4">
           {/* Patient Details */}
@@ -88,7 +85,6 @@ const AppointmentForm = () => {
               />
             </div>
           </div>
-
           {/* Doctor */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Doctor</label>
@@ -98,7 +94,6 @@ const AppointmentForm = () => {
               <option>Dr. Muhammed Iqbal VM</option>
             </select>
           </div>
-
           {/* Date, Duration, Repeat */}
           <div className="grid grid-cols-3 gap-4">
             <div>
@@ -126,7 +121,6 @@ const AppointmentForm = () => {
               <label className="text-sm text-gray-700">Repeat</label>
             </div>
           </div>
-
           {/* Treatment */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Treatment</label>
@@ -136,12 +130,9 @@ const AppointmentForm = () => {
               className="mt-1 w-full border rounded-md px-3 py-2 shadow-sm focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
-
           {/* Submit */}
-          
           {/* Notification Preferences */}
 <div className="pt-4">
-  
   <div className="grid grid-cols-1 gap-4 items-center">
     {/* Doctor Notifications */}
     <div>
@@ -173,7 +164,6 @@ const AppointmentForm = () => {
         </label>
       </div>
     </div>
-
     {/* Patient Notifications */}
     <div>
       <label className="block font-medium text-gray-700">Patient:</label>
@@ -206,7 +196,6 @@ const AppointmentForm = () => {
     </div>
   </div>
 </div>
-
 {/* Action Buttons */}
 <div className="flex justify-end space-x-4 mt-6">
   <button
@@ -222,11 +211,9 @@ const AppointmentForm = () => {
     Save
   </button>
 </div>
-
         </form>
       </div>
     </div>
   );
 };
-
 export default AppointmentForm;
