@@ -58,7 +58,7 @@ class AppointmentMobileAPIView(APIView):
 
                 duration = appointment.duration
 
-                doctor_instance = get_object_or_404(Doctor, firstname=doctor_name)
+                doctor_instance = get_object_or_404(Doctor, id=doctor_name)
 
                 if is_naive(appointment_date):
                     appointment_date = make_aware(appointment_date)
@@ -146,12 +146,12 @@ class EditAppointmentMobileAPIView(APIView):
         """Update the doctor and/or date of an appointment."""
         appointment = get_object_or_404(PatientAppointment, id=appointment_id)
 
-        doctor_firstname = request.data.get("doctor") 
+        doctor = request.data.get("doctor") 
         new_date_str = request.data.get("date") 
 
         
-        if doctor_firstname:
-            doctor = Doctor.objects.filter(firstname=doctor_firstname).first()
+        if doctor:
+            doctor = Doctor.objects.filter(id=doctor).first()
             if not doctor:
                 return Response({"error": "Invalid doctor firstname"}, status=status.HTTP_400_BAD_REQUEST)
             appointment.doctor = doctor  

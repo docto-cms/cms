@@ -3,7 +3,7 @@ from .models import *
 
 
 class PatientAppointmentSerializer(serializers.ModelSerializer):
-    doctor = serializers.CharField(source="doctor.firstname", read_only=True)
+    doctor = serializers.CharField(source="doctor.id", read_only=True)
     status = serializers.CharField(source="get_status_display", read_only=True)
 
     class Meta:
@@ -24,7 +24,6 @@ class PatientAppointmentSerializer(serializers.ModelSerializer):
 
 
 class PatientAppointmentCreateSerializer(serializers.ModelSerializer):
-    doctor = serializers.SlugRelatedField(queryset=Doctor.objects.all(), slug_field='firstname')
     class Meta:
         model = PatientAppointment
         fields = [
