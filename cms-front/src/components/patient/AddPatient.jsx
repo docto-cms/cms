@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-export default function AddPatient({setDoctors, doctors}) {
+export default function AddPatient({setDoctors, doctors, setisupdated,isupdated}) {
   
   const [loadingDoctors, setLoadingDoctors] = useState(true);
   const [fetchError, setFetchError] = useState(null);
@@ -22,7 +22,7 @@ export default function AddPatient({setDoctors, doctors}) {
 
   console.log(formData)
 
-
+  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -38,8 +38,11 @@ export default function AddPatient({setDoctors, doctors}) {
         "http://127.0.0.1:8000/Patient/patients/",
         formData
       );
+      setisupdated(!isupdated)
+      
       console.log("Response:", response.data);
       alert("Patient Added Successfully");
+
     } catch (error) {
       console.error("Error Adding Patient:", error.response?.data || error.message);
       alert(`Error: ${JSON.stringify(error.response?.data || "Something went wrong")}`);
