@@ -7,7 +7,7 @@ class PatientSerializer(serializers.ModelSerializer):
         fields = ['__all__']
     
     def get_doctor_name(self, obj):
-        if obj.Doctor:  # Ensure the Doctor field is not null
+        if obj.Doctor:  
             return f"{obj.Doctor.firstname} {obj.Doctor.lastname}"
         return "No Doctor Assigned"
 
