@@ -198,7 +198,7 @@ class AppointmentAPIView(APIView):
         duration = int(appointment_data.get("Duration", 0))
 
       
-        doctor_instance = get_object_or_404(Doctor, firstname=doctor_name)
+        doctor_instance = get_object_or_404(Doctor, id=doctor_name)
 
     
         appointment_end_time = appointment_date + timedelta(minutes=duration)

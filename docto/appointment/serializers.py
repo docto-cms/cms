@@ -58,7 +58,7 @@ class AppointmentUpdateSerializer(serializers.ModelSerializer):
 class AppointmentGetSerializer(serializers.ModelSerializer):
     Patient = serializers.CharField(source="Patient.FirstName", read_only=True)
     RegistrationId = serializers.CharField(source="Patient.RegistrationId", read_only=True)
-    Doctor = serializers.CharField(source="Doctor.firstname", read_only=True)
+    Doctor = serializers.IntegerField(source="Doctor.id", read_only=True)
 
     class Meta:
         model = Appointments

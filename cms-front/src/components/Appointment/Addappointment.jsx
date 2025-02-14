@@ -1,8 +1,12 @@
-import React, { useState } from "react";
+import React, { useState , useEffect } from "react";
 import axios from "axios";
 
 
+
 const Addappointment = () => {
+  const [doctors, setDoctors] = useState([]);
+  const [loadingDoctors, setLoadingDoctors] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [formData,setFormData]=useState({
     Patient:"",
     Doctor:"",
@@ -38,6 +42,21 @@ const Addappointment = () => {
       alert(`Error: ${JSON.stringify(error.response?.data || "Something went wrong")}`);
     }
   };
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const res = await axios.get("http://127.0.0.1:8000/Patient/doctor/");
+        setDoctors(res.data);
+        setLoadingDoctors(false);
+      } catch (error) {
+        console.error("Error fetching doctors:", error);
+        setFetchError("Failed to fetch doctors");
+        setLoadingDoctors(false);
+      }
+    };
+    fetchDoctors();
+  }, []);
+
   return (
     <div className="max-w-full  bg-white shadow-md rounded-lg p-6  m-6">
       <div className=" w-full max-w-3xl border-b pb-4 mb-4 ">
@@ -77,8 +96,14 @@ const Addappointment = () => {
             name="Doctor"
             value={formData.Doctor}
           >
-            <option value="" disabled>Select Doctor</option>
-            <option value="">Shazna</option>
+            <option >Select Doctor</option>
+            {loadingDoctors && <option>Loading doctors...</option>}
+            {fetchError && <option>{fetchError}</option>}
+            {doctors.map((doctor) => (
+              <option key={doctor.id} value={doctor.id}>
+                {doctor.firstname} {doctor.lastname}
+              </option>
+            ))}
           </select>
         </div>
         {/* Date, Duration, Repeat */}
