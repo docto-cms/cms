@@ -136,6 +136,7 @@ class AppointmentMobileAPIView(APIView):
     #     except PatientAppointment.DoesNotExist:
     #         return Response({"error": "Appointment not found"}, status=status.HTTP_404_NOT_FOUND)
 
+
 class EditAppointmentMobileAPIView(APIView):
     """
     API to edit doctor and date for a specific appointment.
