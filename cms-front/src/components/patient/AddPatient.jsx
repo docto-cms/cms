@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function AddPatient() {
+  const [doctors, setDoctors] = useState([]);
   const [formData, setFormData] = useState({
     FirstName: "",
     LastName: "",
@@ -41,14 +42,20 @@ export default function AddPatient() {
     }
   };
 
-  // useEffect(() => {
-  //   const fetchDoctors = async () => {
-  //     try {
-  //       const res = await axios.get()
-  //     }
-  //   }
-  // })
-  
+ useEffect(() => {
+  const fetchDoctors = async () => {
+    try {
+      const res = await axios.get("http://127.0.0.1:8000/Patient/docter/");
+      setDoctors(res.data);
+      console.log("Doctors:", res.data);
+    } catch (error) {
+      console.error("Error fetching doctors:", error);
+      alert("failed to fetch doctors");
+    }
+  };
+  fetchDoctors();
+ },[]);
+
 
   return (
     <div>
@@ -169,7 +176,13 @@ export default function AddPatient() {
             required
             className="mt-2 p-3 border border-gray-300 rounded-lg w-full">
             <option value="" disabled>Select Doctor</option>
-            <option value="Dr. A">Dr. A</option>
+            {doctors.map((doctor) => (
+              <option key={doctor.id} 
+              value={doctor.id}>
+                {doctor.FirstName} {doctor.LastName}
+            </option>
+            ))}
+            <option name="safwan">safwan</option>
             
             </select>
         </div>

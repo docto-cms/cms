@@ -29,11 +29,10 @@ const Addappointment = () => {
     try {
       const response = await axios.post(
         "http://127.0.0.1:8000/appointment/appointments/",
-        
         formData
       );
       console.log("Response:", response.data);//
-      alert("Appointment Added Successfully");
+      alert("Appointment Scheduled");
     } catch (error) {
       console.error("Error Adding Appointment:", error.response?.data || error.message);
       alert(`Error: ${JSON.stringify(error.response?.data || "Something went wrong")}`);
@@ -107,6 +106,7 @@ const Addappointment = () => {
               onChange={handleInputChange}
               value={formData.Duration}
             >
+              <option value="" disabled>0</option>
               <option>5</option>
               <option>10</option>
               <option>15</option>
