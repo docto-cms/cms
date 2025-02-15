@@ -15,7 +15,7 @@ from django.core.mail import send_mail
 import random
 
 
-class RegisterView(APIView):
+class RegisterView(APIView):  
     """
     API view for user registration.
     """
