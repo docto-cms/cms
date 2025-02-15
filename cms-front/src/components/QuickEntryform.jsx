@@ -48,6 +48,9 @@ const QuickentryForm = () => {
     };
     fetchDoctors();
   }, []);
+
+  console.log(doctors);
+  
   return (
     <div className="bg-gray-50 min-h-screen w-full p-6">
       <form onSubmit={handlesubmit} className="bg-white shadow-md rounded-lg p-8 w-full mx-auto">
@@ -71,6 +74,7 @@ const QuickentryForm = () => {
               onChange={handleInputChange}
               placeholder="Registration ID"
               className="w-full p-1 border border-gray-300 rounded-md focus:ring focus:ring-blue-200 placeholder-gray-400"
+              
             />
           </div>
           <div className="gap-1">
