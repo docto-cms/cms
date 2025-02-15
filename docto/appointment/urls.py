@@ -14,5 +14,7 @@ urlpatterns = [
     path('DocterAppointmentByDocterId/<int:id>', DocterAppointmentByDoctorId.as_view(), name='appointment-details'),
     path('appointmentbydate/', TodayAppointmentsAPIView.as_view(), name='appointmentbydate'),
     path('TotalCanceledAppointments/', TotalCanceledAppointments.as_view(), name='appointmentbydoctor'),
-    path('MissedAppointmentsbeforeNow/', MissedAppointmentsbeforeNow.as_view(), name='appointmentbydoctor'),
+    path('upcomingappointments/', UpcomingAppointments.as_view(), name='appointmentbydoctor'),
+    path('MissedAppointments/', MissedAppointments.as_view(), name='appointmentbydoctor'),
+    path("UpComingAppointments/", UpComingAppointments.as_view(), name="UpComingAppointments"),
 ]
