@@ -475,7 +475,7 @@ class TotalCanceledAppointments(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-class UpCommigAppointmentsForOneWeek(APIView):
+class UpcomingAppointments(APIView):
     def get(self, request):
         today = now().date()
         next_week = today + timedelta(days=7)
@@ -483,7 +483,7 @@ class UpCommigAppointmentsForOneWeek(APIView):
         serializer = AppointmentGetSerializer(appointments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-class MissedAppointmentsbeforeNow(APIView):
+class MissedAppointments(APIView):
     def get(self, request):
         now_time = now()
         print(now_time)
