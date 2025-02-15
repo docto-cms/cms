@@ -1,10 +1,12 @@
 import React from 'react'
-import AddappointmentNewpatient from '../components/Appointment/AddappointmentNewpatient'
+import AddappointmentWithpatient from '../components/Appointment/AddappointmentWithpatient'
+
+
 
 export default function AddAppointmentPage() {
   return (
     <div>
-      <AddappointmentNewpatient/>
+      <AddappointmentWithpatient/>
     </div>
   )
 }
