@@ -446,4 +446,47 @@ class UpcomingAppointmentsAPIView(APIView):
         serializer = AppointmentGetSerializer(appointments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+class DocterAppointmentByDoctorId(APIView):
+    def get(self, request, id):
+        try:
+            doctor = Doctor.objects.get(id=id)
+        except Doctor.DoesNotExist:
+            return Response({"error": "Doctor not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        appointments = Appointments.objects.filter(Doctor=doctor)
+        serializer = AppointmentGetSerializer(appointments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class TodayAppointmentsAPIView(APIView):
+    def get(self, request):
+        today = now().date()
+        appointments = Appointments.objects.filter(Date__date=today)
+        serializer = AppointmentGetSerializer(appointments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class TotalCanceledAppointments(APIView):
+    def get(self, request):
+        try:
+            appointments = Appointments.objects.filter(status='Canceled')
+            appointment_count = appointments.count()
+            return Response({
+                'total_canceled_appointments': appointment_count,
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
+class UpcomingAppointments(APIView):
+    def get(self, request):
+        today = now().date()
+        next_week = today + timedelta(days=7)
+        appointments = Appointments.objects.filter(Date__date__range=[today, next_week])
+        serializer = AppointmentGetSerializer(appointments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class MissedAppointments(APIView):
+    def get(self, request):
+        now_time = now()
+        print(now_time)
+        appointments = Appointments.objects.filter(Date__lt=now_time, status='Scheduled')  
+        serializer = AppointmentGetSerializer(appointments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
