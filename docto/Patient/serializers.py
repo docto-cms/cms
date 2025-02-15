@@ -3,8 +3,8 @@ from .models import *
 
 class PatientSerializer(serializers.ModelSerializer):
     class Meta:
-        model=Patient
-        fields='__all__'
+        model = Patient
+        fields = '__all__'
 
 class BasicInfoSerializer(serializers.ModelSerializer):
     class Meta:

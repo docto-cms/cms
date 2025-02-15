@@ -2,9 +2,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Patient
+from .models import *
 from .serializers import *
-from .models import Doctor
 
 class PatientDetailAPIView(APIView):
 
@@ -14,7 +13,7 @@ class PatientDetailAPIView(APIView):
 
             serializer = PatientSerializer(patients, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        else:  # Retrieve a single patient
+        else:  
             patient = get_object_or_404(Patient, pk=pk)
             serializer = PatientSerializer(patient)
             return Response(serializer.data, status=status.HTTP_200_OK)
