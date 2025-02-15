@@ -223,7 +223,7 @@ class AppointmentAPIView(APIView):
             return Response({"error": "Doctor is not available at this time"}, status=status.HTTP_400_BAD_REQUEST)
 
        
-        patient_instance, _ = Patient.objects.get_or_create(
+        patient_instance, _= Patient.objects.get_or_create(
             FirstName=patient_data.get("FirstName"),
             LastName=patient_data.get("LastName"),
             defaults={
