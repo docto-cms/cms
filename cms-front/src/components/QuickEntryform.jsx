@@ -1,8 +1,11 @@
-import React, { useState } from "react";
+import React, { useState ,useEffect } from "react";
 import { postData } from "@/API/Axios";
-
+import axios from "axios";
 
 const QuickentryForm = () => {
+    const [doctors, setDoctors] = useState([]);
+    const [loadingDoctors, setLoadingDoctors] = useState(true);
+    const [fetchError, setFetchError] = useState(null);
   const [formData,setFormData] = useState({
     RegistrationId : "",
     FirstName : "",
@@ -30,6 +33,21 @@ const QuickentryForm = () => {
       alert("Error Adding Patient");
     }
   }
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const res = await axios.get("http://127.0.0.1:8000/Patient/doctor/");
+        setDoctors(res.data);
+        setLoadingDoctors(false);
+      } catch (error) {
+        console.error("Error fetching doctors:", error);
+        setFetchError("Failed to fetch doctors");
+        setLoadingDoctors(false);
+      }
+    };
+    fetchDoctors();
+  }, []);
   return (
     <div className="bg-gray-50 min-h-screen w-full p-6">
       <form onSubmit={handlesubmit} className="bg-white shadow-md rounded-lg p-8 w-full mx-auto">
@@ -130,11 +148,21 @@ const QuickentryForm = () => {
             <label className="block text-sm font-medium text-gray-700">
               Doctor
             </label>
-           <input type="text" 
-           name="Doctor"
-           value={formData.Doctor}
-           onChange={handleInputChange}
-           placeholder="doctor"/>
+            <select
+            className="w-full p-1 border border-gray-300 rounded-md focus:ring focus:ring-blue-200 placeholder-gray-400"
+            onChange={handleInputChange}
+            name="Doctor"
+            value={formData.Doctor}
+          >
+            <option >Select Doctor</option>
+            {loadingDoctors && <option>Loading doctors...</option>}
+            {fetchError && <option>{fetchError}</option>}
+            {doctors.map((doctor) => (
+              <option key={doctor.id} value={doctor.id}>
+                {doctor.firstname} {doctor.lastname}
+              </option>
+            ))}
+          </select>
           </div>
          
         </div>
