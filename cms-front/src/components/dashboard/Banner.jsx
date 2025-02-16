@@ -22,26 +22,11 @@ export default function Banner() {
 
   useEffect(() => {
     fetchData("http://localhost:8000/Patient/patients/", setPatientData);
-  }, []);
-  
-  useEffect(() => {
     fetchData("http://localhost:8000/appointment/appointmentbydate/", setAppointmentData);
-  }, []);
-
-  useEffect(() => {
     fetchData("http://localhost:8000/appointment/MissedAppointments/", setMissedAppointmentData);
-  }, []);
-
-  useEffect(() => {
     fetchData("http://localhost:8000/appointment/UpComingAppointments/", setUpComingAppointmentsData);
-  }, []);
-  
-  useEffect(() => {
     fetchData("http://localhost:8000/Patient/todayspatients/", setTodayPatientsData);
-  }, []);
-  
-  useEffect(() => {
-    fetchData("http://localhost:8000/appointment/TotalCanceledAppointments/", setCancledAppointmentData);
+      fetchData("http://localhost:8000/appointment/TotalCanceledAppointments/", setCancledAppointmentData);
   }, []);
   
   const [cardData, setCardData] = useState([

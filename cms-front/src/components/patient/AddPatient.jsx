@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-export default function AddPatient({setDoctors, doctors, setisupdated,isupdated}) {
-  
+export default function AddPatient({ setDoctors, doctors, setisupdated, isupdated }) {
   const [loadingDoctors, setLoadingDoctors] = useState(true);
   const [fetchError, setFetchError] = useState(null);
- 
+  const [errors, setErrors] = useState({}); // State to store validation errors
+
   const [formData, setFormData] = useState({
     FirstName: "",
     LastName: "",
@@ -20,29 +20,95 @@ export default function AddPatient({setDoctors, doctors, setisupdated,isupdated}
     FeeType: "",
   });
 
-  console.log(formData)
-
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    setErrors((prevErrors) => ({ ...prevErrors, [name]: "" })); // Clear the error for the field being edited
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
   };
 
+  // Validate form fields
+  const validateForm = () => {
+    let newErrors = {};
+
+    // Validate FirstName
+    if (!formData.FirstName.match(/^[A-Za-z]+$/)) {
+      newErrors.FirstName = "Please enter a valid first name";
+    }
+
+    // Validate LastName
+    if (!formData.LastName.match(/^[A-Za-z]+$/)) {
+      newErrors.LastName = "Please enter a valid last name";
+    }
+
+    // Validate PhoneNumber
+    if (!formData.PhoneNumber.match(/^\d{10}$/)) {
+      newErrors.PhoneNumber = "Phone number must be 10 digits";
+    }
+
+    // Validate Email
+    if (!formData.Email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      newErrors.Email = "Invalid email address";
+    }
+
+    // Validate Age
+    if (!formData.Age || isNaN(formData.Age) || formData.Age <= 0) {
+      newErrors.Age = "Please enter a valid age";
+    }
+
+    // Validate Gender
+    if (!formData.Gender) {
+      newErrors.Gender = "Please select a gender";
+    }
+
+    // Validate City
+    if (!formData.City.trim()) {
+      newErrors.City = "City is required";
+    }
+
+    // Validate Doctor
+    if (!formData.Doctor) {
+      newErrors.Doctor = "Please select a doctor";
+    }
+
+    // Validate ReferredBy
+    if (!formData.ReferredBy.trim()) {
+      newErrors.ReferredBy = "Referred by is required";
+    }
+
+    // Validate Fee
+    if (!formData.Fee || isNaN(formData.Fee) || formData.Fee <= 0) {
+      newErrors.Fee = "Please enter a valid fee";
+    }
+
+    // Validate FeeType
+    if (!formData.FeeType) {
+      newErrors.FeeType = "Please select a fee type";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0; // Return true if no errors
+  };
+
   // Submit data to backend
   const handleSavePatient = async () => {
+    if (!validateForm()) {
+      alert("Please fix the errors before submitting.");
+      return;
+    }
+
     try {
       const response = await axios.post(
         "http://127.0.0.1:8000/Patient/patients/",
         formData
       );
-      setisupdated(!isupdated)
-      
+      setisupdated(!isupdated);
+
       console.log("Response:", response.data);
       alert("Patient Added Successfully");
-
     } catch (error) {
       console.error("Error Adding Patient:", error.response?.data || error.message);
       alert(`Error: ${JSON.stringify(error.response?.data || "Something went wrong")}`);
@@ -64,15 +130,10 @@ export default function AddPatient({setDoctors, doctors, setisupdated,isupdated}
     fetchDoctors();
   }, []);
 
-  // Log the updated doctors state
-  useEffect(() => {
-    console.log("Updated doctors:", doctors);
-  }, [doctors]);
-
   return (
     <div>
       <h1 className="text-xl font-semibold text-gray-700 mb-6">New Patient Info</h1>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div>
           <label className="block text-sm font-bold text-gray-700">First Name</label>
@@ -85,6 +146,7 @@ export default function AddPatient({setDoctors, doctors, setisupdated,isupdated}
             required
             className="mt-2 p-3 border border-gray-300 rounded-lg w-full"
           />
+          {errors.FirstName && <p className="text-red-500 text-sm">{errors.FirstName}</p>}
         </div>
         <div>
           <label className="block text-sm font-bold text-gray-700">Last Name</label>
@@ -96,6 +158,7 @@ export default function AddPatient({setDoctors, doctors, setisupdated,isupdated}
             placeholder="Last Name"
             className="mt-2 p-3 border border-gray-300 rounded-lg w-full"
           />
+          {errors.LastName && <p className="text-red-500 text-sm">{errors.LastName}</p>}
         </div>
         <div>
           <label className="block text-sm font-bold text-gray-700">Phone Number</label>
@@ -108,6 +171,7 @@ export default function AddPatient({setDoctors, doctors, setisupdated,isupdated}
             required
             className="mt-2 p-3 border border-gray-300 rounded-lg w-full"
           />
+          {errors.PhoneNumber && <p className="text-red-500 text-sm">{errors.PhoneNumber}</p>}
         </div>
       </div>
 
@@ -123,6 +187,7 @@ export default function AddPatient({setDoctors, doctors, setisupdated,isupdated}
             required
             className="mt-2 p-3 border border-gray-300 rounded-lg w-full"
           />
+          {errors.Email && <p className="text-red-500 text-sm">{errors.Email}</p>}
         </div>
         <div>
           <label className="block text-sm font-bold text-gray-700">Age</label>
@@ -135,6 +200,7 @@ export default function AddPatient({setDoctors, doctors, setisupdated,isupdated}
             required
             className="mt-2 p-3 border border-gray-300 rounded-lg w-full"
           />
+          {errors.Age && <p className="text-red-500 text-sm">{errors.Age}</p>}
         </div>
         <div>
           <label className="block text-sm font-bold text-gray-700">Gender</label>
@@ -150,6 +216,7 @@ export default function AddPatient({setDoctors, doctors, setisupdated,isupdated}
             <option value="Female">Female</option>
             <option value="Other">Other</option>
           </select>
+          {errors.Gender && <p className="text-red-500 text-sm">{errors.Gender}</p>}
         </div>
       </div>
 
@@ -165,6 +232,7 @@ export default function AddPatient({setDoctors, doctors, setisupdated,isupdated}
             required
             className="mt-2 p-3 border border-gray-300 rounded-lg w-full"
           />
+          {errors.City && <p className="text-red-500 text-sm">{errors.City}</p>}
         </div>
         <div>
           <label className="block text-sm font-bold text-gray-700">Referred by</label>
@@ -177,6 +245,7 @@ export default function AddPatient({setDoctors, doctors, setisupdated,isupdated}
             required
             className="mt-2 p-3 border border-gray-300 rounded-lg w-full"
           />
+          {errors.ReferredBy && <p className="text-red-500 text-sm">{errors.ReferredBy}</p>}
         </div>
         <div>
           <label className="block text-sm font-bold text-gray-700">Doctor</label>
@@ -186,9 +255,8 @@ export default function AddPatient({setDoctors, doctors, setisupdated,isupdated}
             onChange={handleInputChange}
             className="mt-2 p-3 border border-gray-300 rounded-lg w-full"
             required
-            // disabled={loadingDoctors || fetchError}
           >
-            <option >Select Doctor</option>
+            <option value="">Select Doctor</option>
             {loadingDoctors && <option>Loading doctors...</option>}
             {fetchError && <option>{fetchError}</option>}
             {doctors.map((doctor) => (
@@ -197,12 +265,12 @@ export default function AddPatient({setDoctors, doctors, setisupdated,isupdated}
               </option>
             ))}
           </select>
+          {errors.Doctor && <p className="text-red-500 text-sm">{errors.Doctor}</p>}
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-
-      <div>
+        <div>
           <label className="block text-sm font-bold text-gray-700">Consultation Fee</label>
           <input
             type="number"
@@ -213,8 +281,8 @@ export default function AddPatient({setDoctors, doctors, setisupdated,isupdated}
             required
             className="mt-2 p-3 border border-gray-300 rounded-lg w-full"
           />
+          {errors.Fee && <p className="text-red-500 text-sm">{errors.Fee}</p>}
         </div>
-
         <div>
           <label className="block text-sm font-bold text-gray-700">Fee Type</label>
           <select
@@ -230,6 +298,7 @@ export default function AddPatient({setDoctors, doctors, setisupdated,isupdated}
             <option value="Card">Card</option>
             <option value="G-pay">G-pay</option>
           </select>
+          {errors.FeeType && <p className="text-red-500 text-sm">{errors.FeeType}</p>}
         </div>
       </div>
 
