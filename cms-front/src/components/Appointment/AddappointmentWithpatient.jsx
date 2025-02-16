@@ -3,10 +3,14 @@ import axios from "axios";
 import AddappointmentNewpatient from "./AddappointmentNewpatient";
 
 const AddappointmentWithpatient = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedPatient, setSelectedPatient] = useState(null);
   const [switchAppointment, setSwitchAppointment] = useState(true);
   const [doctors, setDoctors] = useState([]);
   const [loadingDoctors, setLoadingDoctors] = useState(true);
   const [fetchError, setFetchError] = useState(null);
+  const [patientsDetails, setPatientsDetails] = useState([])
+  const [showDropdown, setShowDropdown] = useState(false);
    const [formData, setFormData] = useState({
       Patient: {
         FirstName: "",
@@ -62,11 +66,12 @@ const AddappointmentWithpatient = () => {
           },
           Date: new Date(formData.Date).toISOString(),
         };
-  
+    
         const response = await axios.post(
           "http://127.0.0.1:8000/appointment/appointments/",
           requestData
         );
+        
         
         console.log("Response:", response.data);
         alert("Appointment Scheduled");
@@ -83,6 +88,7 @@ const AddappointmentWithpatient = () => {
       }
     };
   
+  
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
@@ -97,6 +103,55 @@ const AddappointmentWithpatient = () => {
     };
     fetchDoctors();
   }, []);
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        const response = await axios.get("http://127.0.0.1:8000/Patient/patients/");
+        setPatientsDetails(response.data);  // Fixed casing here
+      } catch (error) {
+        console.error("Error fetching Patient Name:", error);
+      }
+    }
+    fetchPatients();
+  }, []);
+
+
+  // searchpatients
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    setShowDropdown(true);
+  };
+
+  // Handle patient selection
+ const handleSelectPatient = (patient) => {
+    setSelectedPatient(patient);
+    setFormData(prev => ({
+      ...prev,
+      Patient: {
+        FirstName: patient.FirstName,
+        LastName: patient.LastName,
+        PhoneNumber: patient.PhoneNumber,
+        Email: patient.Email,
+        Age: patient.Age,
+        Gender: patient.Gender,
+        City: patient.City,
+      },
+    }));
+    setSearchQuery(`${patient.FirstName} ${patient.LastName}`);
+    setShowDropdown(false);
+  };
+
+
+// Filter patients based on search query
+const filteredPatients = patientsDetails.filter(patient =>
+    `${patient.FirstName} ${patient.LastName}`
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase())
+  );
+
+console.log("search:",formData);
+
+  
   return (
     <div className="max-w-full bg-white shadow-md rounded-lg p-6 m-6">
       <div className="w-full max-w-3xl border-b pb-4 mb-4">
@@ -132,11 +187,28 @@ const AddappointmentWithpatient = () => {
            <input
              type="text"
              name="Patient"
-             value={formData.Patient}
+             value={searchQuery}
              placeholder="Search Patient Name"
-             onChange={handleInputChange}
+             onChange={handleSearchChange}
              className="mt-1 w-full border rounded-md px-3 py-2 text-sm shadow-sm focus:ring-blue-500 focus:border-blue-500"
            />
+            {searchQuery && showDropdown && (
+    <div className="absolute z-10 mt-1  bg-white border rounded-md shadow-md max-h-40 overflow-auto">
+     {filteredPatients.length > 0 ? (
+                  filteredPatients.map(patient => (
+                    <div
+                      key={patient.RegistrationId}
+                      onClick={() => handleSelectPatient(patient)}
+                      className="p-2 hover:bg-blue-100 cursor-pointer text-sm"
+                    >
+                      {patient.FirstName} {patient.LastName} - {patient.PhoneNumber}
+                    </div>
+                  ))
+                ) : (
+        <div className="p-2 text-gray-500">No matching patients found</div>
+      )}
+    </div>
+  )}
          </div>
          {/* Doctor Selection */}
          <div>
