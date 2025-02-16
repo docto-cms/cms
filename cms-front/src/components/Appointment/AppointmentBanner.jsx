@@ -38,7 +38,7 @@ export default function AppointmentBanner() {
           <div className="ml-auto text-right">
             <p className="text-3xl font-bold">8</p>
             <p className="text-gray-600">
-              <strong>Jan</strong> Missed Appointments
+              Today Missed Appointments
             </p>
           </div>
         </div>
