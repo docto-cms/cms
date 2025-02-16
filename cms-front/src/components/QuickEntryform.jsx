@@ -61,22 +61,8 @@ const QuickentryForm = () => {
         <div className="border-t border-gray-300 mb-6"></div>
         <h3 className="text-lg font-semibold mb-4">Basic Info</h3>
         {/* Row for Registration ID, First Name, Last Name, Mobile, Email */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Registration ID
-            </label>
-            <input
-              type="text"
-              defaultValue="PAT137"
-              name="RegistrationId"
-              value={formData.RegistrationId}
-              onChange={handleInputChange}
-              placeholder="Registration ID"
-              className="w-full p-1 border border-gray-300 rounded-md focus:ring focus:ring-blue-200 placeholder-gray-400"
-              
-            />
-          </div>
+        <div className="grid grid-cols-3 gap-4 mb-6">
+       
           <div className="gap-1">
             <label className="block text-sm font-medium text-gray-700">
               First Name
@@ -119,7 +105,7 @@ const QuickentryForm = () => {
           
         </div>
         {/* Second Row Inputs */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-3 gap-4 mb-6">
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Age

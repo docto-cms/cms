@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import *
 from .serializers import *
+from django.utils.timezone import now
 
 class PatientDetailAPIView(APIView):
 
@@ -84,3 +85,9 @@ class DoctorDetailAPIView(APIView):
         serializer=DocterSerializer(doctor,many=True)
         return Response(serializer.data,status=status.HTTP_200_OK)
     
+class TodaysPatientListAPIView(APIView):
+    def get(self,request):
+        today = now().date()
+        today_patients=Patient.objects.filter(created_at__date=today)
+        serializer=PatientSerializer(today_patients,many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)

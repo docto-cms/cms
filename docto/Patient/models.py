@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.utils import timezone
 
 class Doctor(models.Model):
     firstname = models.CharField(max_length=255)
@@ -29,6 +29,7 @@ class Patient(models.Model):
     RefferedBy = models.CharField(max_length=100,null=True)
     Fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     FeeType = models.CharField(max_length=100)
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.RegistrationId} {self.FirstName} {self.LastName}"
