@@ -493,3 +493,13 @@ class UpComingAppointments(APIView):
         appointments = Appointments.objects.filter(Date__gt=now_time, status='Scheduled')  
         serializer = AppointmentGetSerializer(appointments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+# calculating appointments by ["January", "February", "March", "April", "May", "June","august","September","October","November","December"]
+class AppointmentsByMonth(APIView):
+    def get(self, request):
+        appointments = Appointments.objects.all()
+        months = ["January", "February", "March", "April", "May", "June","august","September","October","November","December"]
+        data = {}
+        for month in months:
+            data[month] = appointments.filter(Date__month=months.index(month) + 1).count()
+        return Response(data, status=status.HTTP_200_OK)
