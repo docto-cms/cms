@@ -103,16 +103,14 @@ export default function SearchPatient() {
                 <th className="border border-gray-300 px-4 py-2 text-left">Name</th>
                 <th className="border border-gray-300 px-4 py-2 text-left">Basic Info</th>
                 <th className="border border-gray-300 px-4 py-2 text-left">Contact</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Status</th>
+               
               </tr>
             </thead>
             <tbody>
               {[...Array(5)].map((_, index) => (
                 <tr key={index} className="hover:bg-gray-50">
                   <td className="border border-gray-300 px-4 py-2">
-                    <button className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">
-                      <FcViewDetails />
-                    </button>
+                 
                     <button className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 ml-2">
                       <MdOutlineDelete />
                     </button>
@@ -127,7 +125,7 @@ export default function SearchPatient() {
                     <p>Email: --</p>
                     <p>Phone: --</p>
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">--</td>
+                 
                 </tr>
               ))}
             </tbody>
