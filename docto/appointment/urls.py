@@ -17,4 +17,5 @@ urlpatterns = [
     path('upcomingappointments/', UpcomingAppointments.as_view(), name='appointmentbydoctor'),
     path('MissedAppointments/', MissedAppointments.as_view(), name='appointmentbydoctor'),
     path("UpComingAppointments/", UpComingAppointments.as_view(), name="UpComingAppointments"),
+    path("AppointmentsByMonth/", AppointmentsByMonth.as_view(), name="AppointmentsByMonth"),
 ]

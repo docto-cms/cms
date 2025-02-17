@@ -91,3 +91,20 @@ class TodaysPatientListAPIView(APIView):
         today_patients=Patient.objects.filter(created_at__date=today)
         serializer=PatientSerializer(today_patients,many=True)
         return Response(serializer.data,status=status.HTTP_200_OK)
+
+# patients before this month
+class PatientsBeforeThisMonth(APIView):
+    def get(self,request):
+        today = now().date()
+        patients=Patient.objects.filter(created_at__month__lt=today.month)
+        serializer=PatientSerializer(patients,many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+    
+# new patients of this month
+class NewPatientsOfMonth(APIView):
+    def get(self,request):
+        today = now().date()
+        new_patients=Patient.objects.filter(created_at__month=today.month)
+        serializer=PatientSerializer(new_patients,many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+    
