@@ -1,6 +1,20 @@
-import React from 'react'
+import React ,{useState,useEffect} from 'react'
 
 export default function DoctorProfile() {
+  const [doctor, setDoctor] = useState("");
+
+  useEffect(() => {
+    fetch(`http://127.0.0.1:8000/Doctorget/${clinic_id}/`) // Update API URL if needed
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Doctor not found");
+        }
+        return response.json();
+      })
+      .then((data) => setDoctor(data))
+      .catch((err) => setError(err.message));
+  }, []);
+
   return (
     <div className="flex justify-center   bg-gray-100">
     <div className="bg-white shadow-lg rounded-lg p-8  w-full">
@@ -12,9 +26,8 @@ export default function DoctorProfile() {
           </label>
           <input
             type="text"
-            placeholder="First Name"
+            value={doctor.first_name}
             className="w-full py-3 px-2 border border-gray rounded-md focus:ring focus:ring-blue-200"
-            defaultValue="ABCD"
           />
         </div>
         <div>
@@ -23,9 +36,9 @@ export default function DoctorProfile() {
           </label>
           <input
             type="text"
-            placeholder="Last Name"
+            value={doctor.second_name}
             className="w-full py-3 px-2 border border-gray rounded-md focus:ring focus:ring-blue-200"
-            defaultValue="VM"
+          
           />
         </div>
         <div>
@@ -34,49 +47,35 @@ export default function DoctorProfile() {
           </label>
           <input
             type="email"
-            placeholder="Email"
+            value={doctor.email}
             className="w-full py-3 px-2 border border-gray rounded-md focus:ring focus:ring-blue-200"
-            defaultValue="abcd123@gmail.com"
           />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Date of Birth
+            Phone Number
           </label>
           <input
-            type="date"
+            type="phone number"
+            value={doctor.phone_number}
             className="w-full py-3 px-2 border border-gray rounded-md focus:ring focus:ring-blue-200"
-            defaultValue="DOB"
           />
         </div>
-        <div className="flex gap-6">
-<div className="w-1/2">
-  <label className="block text-sm font-medium text-gray-700">
-    Gender
-  </label>
-  <select className="w-full py-3 px-2 border border-gray rounded-md focus:ring focus:ring-blue-200">
-    <option>Male</option>
-    <option>Female</option>
-    <option>Other</option>
-  </select>
-</div>
-<div className="w-1/2">
-  <label className="block text-sm font-medium text-gray-700">
-    Marital Status
-  </label>
-  <select className="w-full py-3 px-2 border border-gray rounded-md focus:ring focus:ring-blue-200">
-    <option>Single</option>
-    <option>Married</option>
-  </select>
-</div>
-</div>
-      {/* Save button aligned to the right */}
-      <div className="flex justify-end mt-6">
-        <button className="px-6 py-2 text-base bg-blue-500 text-white font-medium rounded shadow hover:bg-blue-600">
-          Save
-        </button>
-      </div>
-    </div>
+        <div>
+        <label className="block text-sm font-medium text-gray-700">
+            Clinic Id
+          </label>
+          <input
+            type="clinic id"
+            value={doctor.clinic_id}
+            className="w-full py-3 px-2 border border-gray rounded-md focus:ring focus:ring-blue-200"
+          />
+          </div>
+        
+
+   </div>
+
+ 
   </div>
   </div>
   )
