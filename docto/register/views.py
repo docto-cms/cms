@@ -241,3 +241,22 @@ class forgotPassword(APIView):
 
         return Response({"message": "Password reset successfully"}, status=status.HTTP_200_OK)
     
+
+class DoctorDetails(APIView):
+    def get(self,request,clinic_id):
+        
+        try:
+            doctor = User.objects.get(clinic_id=clinic_id)
+            data = {
+            "first_name": doctor.first_name,
+            "second_name": doctor.second_name,
+            "clinic_id": doctor.clinic_id,
+            "phone_number": doctor.phone_number,
+            "email": doctor.email,
+            }
+            return Response(data)
+        except User.DoesNotExist:
+               return Response({"error": "Doctor not found"})
+
+
+    
