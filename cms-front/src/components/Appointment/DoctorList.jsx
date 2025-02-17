@@ -1,7 +1,7 @@
 import { select } from '@material-tailwind/react';
 import React, { useState, useEffect } from 'react';
 
-export default function DoctorList() {
+export default function DoctorList({id, setId}) {
   const [doctors, setDoctors] = useState([]);
   const [doctorsCount, setDoctorsCount] = useState({});
 
@@ -9,6 +9,7 @@ export default function DoctorList() {
     try {
       const response = await fetch(url);
       const data = await response.json();
+      console.log(data);
       setter(data);
     } catch (error) {
       console.error(`Error fetching data from ${url}:`, error);
@@ -24,12 +25,14 @@ export default function DoctorList() {
     // Fetching appointment data for each doctor
     doctors.forEach(doctor => {
       fetchData(`http://localhost:8000/appointment/DocterAppointmentByDocterId/${doctor.id}`, (appointments) => {
+        console.log(appointments);
         // Count the number of appointments (length of the array)
         setDoctorsCount(prevCounts => ({
           ...prevCounts,
           [doctor.id]: appointments.length, // Store the count of appointments for each doctor
         }));
       });
+      
     });
   }, [doctors]); // Triggered when doctors data is fetched
 
@@ -40,9 +43,10 @@ export default function DoctorList() {
       </button>
       <ul>
         {doctors.map((doctor) => (
-          <li
+          <span
+            onClick={() => setId(doctor.id)} // Set the id of the selected doctor
             key={doctor.id} // Using doctor.id as the key
-            className="flex items-center justify-between mb-3 last:mb-0 cursor-pointer"
+            className={`flex items-center justify-between mb-3  py-1 px-4 rounded-md last:mb-0 cursor-pointer ${id === doctor.id ? " bg-black    " : ""}` }
           >
             <div className="flex items-center">
               <span
@@ -51,9 +55,9 @@ export default function DoctorList() {
               <span className="text-blue-500 font-medium">{doctor.firstname}</span>
             </div>
             <span className="text-gray-600">
-              ({doctorsCount[doctor.id] || 0})
+              ({doctorsCount[doctor.id] })
             </span>
-          </li>
+          </span>
         ))}
       </ul>
     </div>
