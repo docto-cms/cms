@@ -21,7 +21,7 @@ export default function AppointmentBanner() {
 
   useEffect(() => {
     fetchData('http://localhost:8000/appointment/appointmentbydate/', setAppointmentData);
-    fetchData('http://localhost:8000/appointment/UpComingAppointments/', setUpComingAppointmentsData);
+    fetchData('http://localhost:8000/appointment/upcomingappointmentsWeek/', setUpComingAppointmentsData);
     fetchData('http://localhost:8000/appointment/MissedAppointments/', setMissedAppointmentData);
   }, []);
 
@@ -49,7 +49,7 @@ export default function AppointmentBanner() {
           </div>
           <div className="ml-auto text-right">
             <p className="text-3xl font-bold">{upComingAppointmentsData.length}</p>
-            <p className="text-gray-600">Upcoming Appointments</p>
+            <p className="text-gray-600">Upcoming Appointments this week</p>
           </div>
         </div>
 
