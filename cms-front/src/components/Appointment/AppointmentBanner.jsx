@@ -21,7 +21,8 @@ export default function AppointmentBanner() {
           </div>
         </div>
 
-        <div className="flex items-center bg-white p-6">
+        <div className="flex items-center bg-white p-6 cursor-pointer"
+        onClick={() => navigate('/upcoming-appointment')}>
           <div className="text-red-500 text-4xl">
             <FaRegCalendarDays />
           </div>
@@ -31,7 +32,8 @@ export default function AppointmentBanner() {
           </div>
         </div>
 
-        <div className="flex items-center bg-white p-6">
+        <div className="flex items-center bg-white p-6 cursor-pointer"
+        onClick={() => navigate('/missed-appointment')}>
           <div className="text-green-500 text-4xl">
             <FaRegCalendar />
           </div>

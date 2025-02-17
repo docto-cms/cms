@@ -13,6 +13,8 @@ import TotalAppointment from './components/Appointment/TotalAppointment';
 import AddAppointmentPage from './pages/AddAppointmentPage';
 import SearchPatientPage from './pages/SearchPatientPage';
 import DoctorProfile from './components/DoctorProfile';
+import UpcomingAppointment from './components/Appointment/UpcomingAppointment';
+import MissedAppointment from './components/Appointment/MissedAppointment';
 
 function App() {
   return (
@@ -31,6 +33,8 @@ function App() {
           <Route path="add-patients" element={<AddPatientPage />} />
           <Route path="today-patient" element={<TodayPatientpage />} />
           <Route path="total-appointments" element={<TotalAppointment />} />
+          <Route path="upcoming-appointment" element={<UpcomingAppointment />} />
+          <Route path="missed-appointment" element={<MissedAppointment />} />
           <Route path="add-appointment" element={<AddAppointmentPage />} />
           <Route path="search-patient" element={<SearchPatientPage />} />
           <Route path="doctor-profile" element={<DoctorProfile />} />

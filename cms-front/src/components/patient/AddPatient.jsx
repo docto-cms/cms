@@ -209,7 +209,7 @@ export default function AddPatient({setDoctors, doctors, setisupdated,isupdated}
             name="Fee"
             value={formData.Fee}
             onChange={handleInputChange}
-            placeholder="ConsultationFee"
+            placeholder="Consultation Fee"
             required
             className="mt-2 p-3 border border-gray-300 rounded-lg w-full"
           />
