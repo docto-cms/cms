@@ -80,12 +80,11 @@ class RegisterView(APIView):
             },
             status=status.HTTP_201_CREATED,
         )
-
+    
 
 class LoginView(APIView):
-
     """
-    API view for user login. It returns a JWT token upon successful authentication.
+    API view for user login. It returns a JWT token as cookies upon successful authentication.
     """
 
     def post(self, request, *args, **kwargs):
@@ -95,7 +94,7 @@ class LoginView(APIView):
 
         # Validate input
         if not email or not password or not clinic_id:
-            raise ValidationError("email , password and clinic_id are required fields.")
+            raise ValidationError("email, password, and clinic_id are required fields.")
 
         # Authenticate user
         try:
@@ -111,17 +110,33 @@ class LoginView(APIView):
         refresh = RefreshToken.for_user(user)
         access_token = refresh.access_token
 
-        # Return the tokens in response
-        return Response(
+        # Prepare response
+        response = Response(
             {
-                'user':user.first_name+user.second_name,
-                'refresh': str(refresh),
-                'access': str(access_token),
+                'user': f"{user.first_name} {user.last_name}",
             },
             status=status.HTTP_200_OK
         )
 
+        # Set cookies with tokens
+        response.set_cookie(
+            key='refresh_token',
+            value=str(refresh),
+            httponly=True,
+            secure=True,  # Set to True if using HTTPS
+            samesite='Lax',  # Adjust based on your requirements
+            max_age=60 * 60 * 24 * 7,  # 1 week
+        )
+        response.set_cookie(
+            key='access_token',
+            value=str(access_token),
+            httponly=True,
+            secure=True,  # Set to True if using HTTPS
+            samesite='Lax',  # Adjust based on your requirements
+            max_age=60 * 60,  # 1 hour
+        )
 
+        return response
 class LogoutView(APIView):
     """
     API view for user logout.
@@ -225,4 +240,23 @@ class forgotPassword(APIView):
         user.save()
 
         return Response({"message": "Password reset successfully"}, status=status.HTTP_200_OK)
+    
+
+class DoctorDetails(APIView):
+    def get(self,request,clinic_id):
+        
+        try:
+            doctor = User.objects.get(clinic_id=clinic_id)
+            data = {
+            "first_name": doctor.first_name,
+            "second_name": doctor.second_name,
+            "clinic_id": doctor.clinic_id,
+            "phone_number": doctor.phone_number,
+            "email": doctor.email,
+            }
+            return Response(data)
+        except User.DoesNotExist:
+               return Response({"error": "Doctor not found"})
+
+
     

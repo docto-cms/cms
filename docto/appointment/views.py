@@ -72,6 +72,7 @@ class AppointmentMobileAPIView(APIView):
                 )
 
                 if overlapping_doctor.exists():
+                    appointment.status = "Decline"
                     return Response({"error": "Doctor is not available at this time"}, status=status.HTTP_400_BAD_REQUEST)
 
                 # Ensure doctor_instance is included while creating the patient
@@ -93,7 +94,6 @@ class AppointmentMobileAPIView(APIView):
 
                 if overlapping_patient.exists():
                     appointment.status = "Decline"
-                    appointment.save()
                     return Response({"error": "Patient is already booked at this time"}, status=status.HTTP_400_BAD_REQUEST)
 
                 appointment_obj = Appointments.objects.create(
@@ -103,11 +103,9 @@ class AppointmentMobileAPIView(APIView):
                     Notes=appointment.notes,
                     Date=appointment_date,
                     Duration=duration,
-                    status="Accept",
                 )
+                appointment.delete()
 
-                appointment.status = new_status
-                appointment.save()
 
                 return Response(
                     {
@@ -118,11 +116,13 @@ class AppointmentMobileAPIView(APIView):
                     },
                     status=status.HTTP_200_OK
                 )
+            
+            if new_status=="Decline":
+                appointment.delete()
+                return Response({"message":"Delete Successfully"})
 
-            appointment.status = new_status
-            appointment.save()
             return Response({"message": "Appointment status updated"}, status=status.HTTP_200_OK)
-
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     
@@ -232,6 +232,7 @@ class AppointmentAPIView(APIView):
                 "Age": patient_data.get("Age"),
                 "Gender": patient_data.get("Gender"),
                 "City": patient_data.get("City"),
+                "Doctor": doctor_instance,
             },
         )
         
@@ -286,50 +287,7 @@ class AppointmentTotalCountAPIView(APIView):
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-# http://127.0.0.1:8000/appointment/doctorcount/?doctor_name=Dr. Alice
-class DoctorAppointmentCountAPIView(APIView):
-
-    def get(self, request):
-        try:
-            doctor_name = request.query_params.get('doctor_name')
-
-            if not doctor_name:
-                return Response({'error': 'doctor_name is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                doctor = Doctor.objects.get(firstname=doctor_name)
-            except Doctor.DoesNotExist:
-                return Response({'error': 'Doctor not found'}, status=status.HTTP_404_NOT_FOUND)
-
-            appointments = Appointments.objects.filter(Doctor=doctor).exclude(status__in=[1, 0]).values('Date', 'Duration')
-            appointment_count = appointments.count()
-
-            if not appointments:
-                return Response({
-                    'doctor_name': doctor.firstname,
-                    'appointment_count': 0,
-                    'appointments': []
-                }, status=status.HTTP_200_OK)
-
-            appointment_details = [
-                {
-                    'datetime': appointment['Date'],
-                    'duration': appointment['Duration']
-                }
-                for appointment in appointments
-            ]
-
-            return Response({
-                'doctor_name': doctor.firstname,
-                'appointment_count': appointment_count,
-                'appointments': appointment_details
-            }, status=status.HTTP_200_OK)
-
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+       
 
 # http://127.0.0.1:8000/appointment/appointmentdelete/?patient_name=Akki&mobile_no=9639877890&date=2024-02-05T10:31:00Z
 class AppointmentDeleteView(APIView):
@@ -436,24 +394,28 @@ class UpdateAppointmentStatusAPIView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-
-class UpcomingAppointmentsAPIView(APIView):
-    def get(self, request):
-        appointments = Appointments.objects.filter(
-            Date__gte=now(), status__in=['Engaged', 'Waiting', 'Scheduled']
-        ).order_by("Date")
-
-        serializer = AppointmentGetSerializer(appointments, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-class DocterAppointmentByDoctorId(APIView):
+# patentappointmentbydoctorid
+class patentappointmentbydoctorid(APIView):
     def get(self, request, id):
         try:
             doctor = Doctor.objects.get(id=id)
         except Doctor.DoesNotExist:
             return Response({"error": "Doctor not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        appointments = Appointments.objects.filter(Doctor=doctor)
+        appointments = PatientAppointment.objects.filter(doctor=doctor)
+        serializer = PatientAppointmentSerializer(appointments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+class DocterAppointmentByDoctorId(APIView):
+    def get(self, request, id):
+        today = now().date()
+        try:
+            doctor = Doctor.objects.get(id=id)
+        except Doctor.DoesNotExist:
+            return Response({"error": "Doctor not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        appointments = Appointments.objects.filter(Doctor=doctor ,Date__date=today)
         serializer = AppointmentGetSerializer(appointments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -466,16 +428,11 @@ class TodayAppointmentsAPIView(APIView):
 
 class TotalCanceledAppointments(APIView):
     def get(self, request):
-        try:
-            appointments = Appointments.objects.filter(status='Canceled')
-            appointment_count = appointments.count()
-            return Response({
-                'total_canceled_appointments': appointment_count,
-            }, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-class UpcomingAppointments(APIView):
+        appointments = Appointments.objects.filter(status='Canceled')
+        serializer = AppointmentGetSerializer(appointments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+            
+class UpcomingAppointmentsWeek(APIView):
     def get(self, request):
         today = now().date()
         next_week = today + timedelta(days=7)
@@ -486,7 +443,26 @@ class UpcomingAppointments(APIView):
 class MissedAppointments(APIView):
     def get(self, request):
         now_time = now()
-        print(now_time)
-        appointments = Appointments.objects.filter(Date__lt=now_time, status='Scheduled')  
+        today=now().date()
+        appointments = Appointments.objects.filter(Date__lt=now_time, status='Scheduled',Date__date=today)  
         serializer = AppointmentGetSerializer(appointments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class UpComingAppointmentsToday(APIView):
+    def get(self, request):
+        now_time = now()
+        today=now().date()
+        appointments = Appointments.objects.filter(Date__gt=now_time, status='Scheduled',Date__date=today)  
+        serializer = AppointmentGetSerializer(appointments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+# calculating appointments by ["January", "February", "March", "April", "May", "June","august","September","October","November","December"]
+class AppointmentsByMonth(APIView):
+    def get(self, request):
+        appointments = Appointments.objects.all()
+        months = ["January", "February", "March", "April", "May", "June","august","September","October","November","December"]
+        data = {}
+        for month in months:
+            data[month] = appointments.filter(Date__month=months.index(month) + 1).count()
+        return Response(data, status=status.HTTP_200_OK)
+

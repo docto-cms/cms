@@ -3,77 +3,46 @@ import Patientprofile from "./Patientprofile";
 import AddPatient from './AddPatient';
 import axios from 'axios';
 
+const initialPatientState = {
+  FirstName: "",
+  LastName: "",
+  PhoneNumber: "",
+  Email: "",
+  Age: "",
+  Gender: "",
+  City: "",
+  Doctor: "",
+  RefferedBy: "",
+  FeeType: ""
+};
+
 export default function WithPatient() {
   const [isWithPatient, setIsWithPatient] = useState(false);
-   const [doctors, setDoctors] = useState([]);
-  
+  const [doctors, setDoctors] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
-  const [isupdated, setisupdated] =useState(false)
-  
-  const initialPatients = [
-    {
-      FirstName: "",
-      LastName: "",
-      PhoneNumber: "",
-      Email: "",
-      Age: "",
-      Gender: "",
-      City: "",
-      Doctor: "",
-      RefferedBy: "",
-      FeeType: ""
-    }
-  ];
-
-  
-
-  const [patients, setPatients] = useState(initialPatients);
-  const [selectedPatientId, setSelectedPatientId] = useState();
-  const [newPatient, setNewPatient] = useState({
-    FirstName: "",
-    LastName: "",
-    PhoneNumber: "",
-    Email: "",
-    Age: "",
-    Gender: "",
-    City: "",
-    Doctor: "",
-    RefferedBy: "",
-    FeeType: ""
-  });
+  const [isupdated, setisupdated] = useState(false);
+  const [patients, setPatients] = useState([]);
+  const [selectedPatientId, setSelectedPatientId] = useState(null);
+  const [newPatient, setNewPatient] = useState(initialPatientState);
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await axios.get("http://127.0.0.1:8000/Patient/patients/");
-      // console.log("response:", response.data);
-      console.log('rendered');
-      
-      setPatients(response.data);
-      
+      try {
+        const response = await axios.get("http://127.0.0.1:8000/Patient/patients/");
+        setPatients(response.data);
+      } catch (error) {
+        console.error("Error fetching patients:", error);
+      }
     };
     fetchData();
   }, [isupdated]);
-
-  const [id, setId] = useState();
-
-
-  useEffect(() => 
-    {
-      const hi = patients.find((patient) => patient.RegistrationId === selectedPatientId);
-      // console.log("hi:",hi);
-      setId(hi);
-    }, [selectedPatientId]);
-
-
-
-  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewPatient((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSavePatient = (e) => {
+  const handleSavePatient = async (e) => {
     e.preventDefault();
 
     if (!newPatient.FirstName || !newPatient.PhoneNumber) {
@@ -81,57 +50,28 @@ export default function WithPatient() {
       return;
     }
 
-    if (selectedPatientId) {
-      const updatedPatients = patients.map((patient) =>
-        patient.RegistrationId === selectedPatientId
-          ? { ...patient, ...newPatient }
-          : patient
-      );
-      setPatients(updatedPatients);
-      alert("Patient updated successfully!");
-    } else {
-      const newPatientWithId = {
-        ...newPatient,
-        RegistrationId: Date.now().toString(),
-      };
-      setPatients((prev) => [...prev, newPatientWithId]);
-      alert("Patient saved successfully!");
+    try {
+      if (selectedPatientId) {
+        await axios.put(`http://127.0.0.1:8000/Patient/patients/${selectedPatientId}/`, newPatient);
+        alert("Patient updated successfully!");
+      } else {
+        await axios.post("http://127.0.0.1:8000/Patient/patients/", newPatient);
+        alert("Patient saved successfully!");
+      }
+      setisupdated(!isupdated);
+      setNewPatient(initialPatientState);
+      setSelectedPatientId(null);
+    } catch (error) {
+      console.error("Error saving patient:", error);
     }
-
-    setNewPatient({
-      FirstName: "",
-      LastName: "",
-      PhoneNumber: "",
-      Email: "",
-      Age: "",
-      Gender: "",
-      City: "",
-      Doctor: "",
-      RefferedBy: "",
-      FeeType: ""
-    });
-
-    setSelectedPatientId("");
   };
 
   const handleSelectPatient = (e) => {
     const selectedId = Number(e.target.value);
-    
     setSelectedPatientId(selectedId);
 
     const selectedPatient = patients.find((patient) => patient.RegistrationId === selectedId);
-    setNewPatient(selectedPatient || {
-      FirstName: "",
-      LastName: "",
-      PhoneNumber: "",
-      Email: "",
-      Age: "",
-      Gender: "",
-      City: "",
-      Doctor: "",
-      RefferedBy: "",
-      FeeType: ""
-    });
+    setNewPatient(selectedPatient || initialPatientState);
   };
 
   return (
@@ -161,7 +101,7 @@ export default function WithPatient() {
             </label>
             <select
               className="p-3 border border-gray-300 rounded-lg w-full"
-              value={selectedPatientId}
+              value={selectedPatientId || ""}
               onChange={handleSelectPatient}
             >
               <option value="" disabled>
@@ -176,7 +116,7 @@ export default function WithPatient() {
 
             {selectedPatientId && (
               <Patientprofile
-                doctors ={doctors}
+                doctors={doctors}
                 isEditing={isEditing}
                 setIsEditing={setIsEditing}
                 patient={patients.find((patient) => patient.RegistrationId === selectedPatientId)}
@@ -186,14 +126,13 @@ export default function WithPatient() {
           </div>
         ) : (
           <AddPatient
-            doctors ={doctors} 
+            doctors={doctors}
             setDoctors={setDoctors}
             newPatient={newPatient}
             handleInputChange={handleInputChange}
             handleSavePatient={handleSavePatient}
             isupdated={isupdated}
             setisupdated={setisupdated}
-
           />
         )}
       </div>
