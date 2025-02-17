@@ -5,6 +5,7 @@ const AddappointmentNewpatient = () => {
   const [doctors, setDoctors] = useState([]);
   const [loadingDoctors, setLoadingDoctors] = useState(true);
   const [fetchError, setFetchError] = useState(null);
+  const [errors, setErrors] = useState({});
 
   const [formData, setFormData] = useState({
     Patient: {
@@ -30,9 +31,11 @@ const AddappointmentNewpatient = () => {
     const { name, value, type, checked } = e.target;
     const inputValue = type === "checkbox" ? checked : value;
 
+    // Clear the error for the field being edited
     if (name.startsWith("Patient.")) {
       const field = name.split(".")[1];
-      setFormData(prev => ({
+      setErrors((prevErrors) => ({ ...prevErrors, [field]: "" }));
+      setFormData((prev) => ({
         ...prev,
         Patient: {
           ...prev.Patient,
@@ -40,15 +43,60 @@ const AddappointmentNewpatient = () => {
         },
       }));
     } else {
-      setFormData(prev => ({
+      setErrors((prevErrors) => ({ ...prevErrors, [name]: "" }));
+      setFormData((prev) => ({
         ...prev,
         [name]: inputValue,
       }));
     }
   };
 
+  const validateForm = () => {
+    let newErrors = {};
+
+    if (!formData.Patient.FirstName.match(/^[A-Za-z]+$/)) {
+      newErrors.FirstName = "Please enter a valid first name";
+    }
+    if (!formData.Patient.LastName.match(/^[A-Za-z]+$/)) {
+      newErrors.LastName = "Please enter a valid last name";
+    }
+    if (!formData.Patient.Email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      newErrors.Email = "Invalid email address";
+    }
+    if (!formData.Patient.PhoneNumber.match(/^\d{10}$/)) {
+      newErrors.PhoneNumber = "Phone number must be 10 digits";
+    }
+    if (!formData.Patient.Age || isNaN(formData.Patient.Age) || formData.Patient.Age <= 0) {
+      newErrors.Age = "Please enter a valid age";
+    }
+    if (!formData.Patient.Gender) {
+      newErrors.Gender = "Please select a gender";
+    }
+    if (!formData.Patient.City.trim()) {
+      newErrors.City = "City is required";
+    }
+    if (!formData.Doctor) {
+      newErrors.Doctor = "Please select a doctor";
+    }
+    if (!formData.Date) {
+      newErrors.Date = "Please select a date";
+    }
+    if (!formData.Duration) {
+      newErrors.Duration = "Please select a duration";
+    }
+    if (!formData.AppointmentType) {
+      newErrors.AppointmentType = "Please select an appointment type";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSaveAppointment = async (e) => {
     e.preventDefault();
+
+    if (!validateForm()) return;
+
     try {
       const requestData = {
         ...formData,
@@ -60,13 +108,12 @@ const AddappointmentNewpatient = () => {
         },
         Date: new Date(formData.Date).toISOString(),
       };
-  
+
       const response = await axios.post(
         "http://127.0.0.1:8000/appointment/appointments/",
         requestData
       );
-      
-      
+
       console.log("Response:", response.data);
       alert("Appointment Scheduled");
     } catch (error) {
@@ -115,17 +162,20 @@ const AddappointmentNewpatient = () => {
                 placeholder="First Name"
                 className="mt-1 w-full border rounded-md px-3 py-2 shadow-sm"
               />
-             
+              {errors.FirstName && <p className="text-red-500 text-sm">{errors.FirstName}</p>}
             </div>
 
-            <div> <input
+            <div>
+              <input
                 type="text"
                 name="Patient.LastName"
                 value={formData.Patient.LastName}
                 onChange={handleInputChange}
                 placeholder="Last Name"
                 className="mt-6 w-full border rounded-md px-3 py-2 shadow-sm"
-              /></div>
+              />
+              {errors.LastName && <p className="text-red-500 text-sm">{errors.LastName}</p>}
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700">
@@ -139,6 +189,7 @@ const AddappointmentNewpatient = () => {
                 placeholder="Email"
                 className="mt-1 w-full border rounded-md px-3 py-2 shadow-sm"
               />
+              {errors.Email && <p className="text-red-500 text-sm">{errors.Email}</p>}
             </div>
 
             <div>
@@ -153,6 +204,7 @@ const AddappointmentNewpatient = () => {
                 placeholder="Phone Number"
                 className="mt-1 w-full border rounded-md px-3 py-2 shadow-sm"
               />
+              {errors.PhoneNumber && <p className="text-red-500 text-sm">{errors.PhoneNumber}</p>}
             </div>
 
             <div>
@@ -166,6 +218,7 @@ const AddappointmentNewpatient = () => {
                 onChange={handleInputChange}
                 className="mt-1 w-full border rounded-md px-3 py-2 shadow-sm"
               />
+              {errors.Age && <p className="text-red-500 text-sm">{errors.Age}</p>}
             </div>
 
             <div>
@@ -183,6 +236,7 @@ const AddappointmentNewpatient = () => {
                 <option value="Female">Female</option>
                 <option value="Other">Other</option>
               </select>
+              {errors.Gender && <p className="text-red-500 text-sm">{errors.Gender}</p>}
             </div>
 
             <div>
@@ -197,6 +251,7 @@ const AddappointmentNewpatient = () => {
                 placeholder="City"
                 className="mt-1 w-full border rounded-md px-3 py-2 shadow-sm"
               />
+              {errors.City && <p className="text-red-500 text-sm">{errors.City}</p>}
             </div>
 
             <div>
@@ -218,6 +273,7 @@ const AddappointmentNewpatient = () => {
                   </option>
                 ))}
               </select>
+              {errors.Doctor && <p className="text-red-500 text-sm">{errors.Doctor}</p>}
             </div>
           </div>
 
@@ -233,6 +289,7 @@ const AddappointmentNewpatient = () => {
                 onChange={handleInputChange}
                 className="w-full mt-1 border rounded-md px-3 py-2"
               />
+              {errors.Date && <p className="text-red-500 text-sm">{errors.Date}</p>}
             </div>
 
             <div>
@@ -251,6 +308,7 @@ const AddappointmentNewpatient = () => {
                 <option value="15">15 minutes</option>
                 <option value="30">30 minutes</option>
               </select>
+              {errors.Duration && <p className="text-red-500 text-sm">{errors.Duration}</p>}
             </div>
 
             <div className="flex items-center gap-2 mt-7">
@@ -295,6 +353,7 @@ const AddappointmentNewpatient = () => {
                   {type}
                 </label>
               ))}
+              {errors.AppointmentType && <p className="text-red-500 text-sm">{errors.AppointmentType}</p>}
             </div>
           </div>
 
@@ -346,4 +405,3 @@ const AddappointmentNewpatient = () => {
 };
 
 export default AddappointmentNewpatient;
-

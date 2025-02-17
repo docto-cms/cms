@@ -9,7 +9,11 @@ export default function Banner() {
   const [UpComingAppointmentsData, setUpComingAppointmentsData] = useState([]);
   const [todayPatientsData, setTodayPatientsData] = useState([]);
   const [cancledAppointmentData, setCancledAppointmentData] = useState([]);
-
+  console.log("app",appointmentData);
+  console.log("miss",missedAppointmentData);
+  console.log("up",UpComingAppointmentsData);
+  
+  
   async function fetchData(url, setter) {
     try {
       const response = await fetch(url);
@@ -22,26 +26,11 @@ export default function Banner() {
 
   useEffect(() => {
     fetchData("http://localhost:8000/Patient/patients/", setPatientData);
-  }, []);
-  
-  useEffect(() => {
     fetchData("http://localhost:8000/appointment/appointmentbydate/", setAppointmentData);
-  }, []);
-
-  useEffect(() => {
     fetchData("http://localhost:8000/appointment/MissedAppointments/", setMissedAppointmentData);
-  }, []);
-
-  useEffect(() => {
-    fetchData("http://localhost:8000/appointment/UpComingAppointments/", setUpComingAppointmentsData);
-  }, []);
-  
-  useEffect(() => {
+    fetchData("http://localhost:8000/appointment/UpComingAppointmentsToday/", setUpComingAppointmentsData);
     fetchData("http://localhost:8000/Patient/todayspatients/", setTodayPatientsData);
-  }, []);
-  
-  useEffect(() => {
-    fetchData("http://localhost:8000/appointment/TotalCanceledAppointments/", setCancledAppointmentData);
+      fetchData("http://localhost:8000/appointment/TotalCanceledAppointments/", setCancledAppointmentData);
   }, []);
   
   const [cardData, setCardData] = useState([
