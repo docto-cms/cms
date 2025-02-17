@@ -394,6 +394,18 @@ class UpdateAppointmentStatusAPIView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
+# patentappointmentbydoctorid
+class patentappointmentbydoctorid(APIView):
+    def get(self, request, id):
+        try:
+            doctor = Doctor.objects.get(id=id)
+        except Doctor.DoesNotExist:
+            return Response({"error": "Doctor not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        appointments = PatientAppointment.objects.filter(doctor=doctor)
+        serializer = PatientAppointmentSerializer(appointments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
 
 class DocterAppointmentByDoctorId(APIView):
     def get(self, request, id):
@@ -453,3 +465,4 @@ class AppointmentsByMonth(APIView):
         for month in months:
             data[month] = appointments.filter(Date__month=months.index(month) + 1).count()
         return Response(data, status=status.HTTP_200_OK)
+
