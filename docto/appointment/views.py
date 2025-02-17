@@ -438,6 +438,7 @@ class UpcomingAppointmentsWeek(APIView):
         next_week = today + timedelta(days=7)
         appointments = Appointments.objects.filter(Date__date__range=[today, next_week])
         serializer = AppointmentGetSerializer(appointments, many=True)
+        # print('appp',serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class MissedAppointments(APIView):

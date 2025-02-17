@@ -32,9 +32,10 @@ class AppointmentUpdateSerializer(serializers.ModelSerializer):
         fields = ["status"]
 
 
+
 class AppointmentGetSerializer(serializers.ModelSerializer):
-    Patient = serializers.PrimaryKeyRelatedField(source="Patient.RegistertionId", read_only=True)
     RegistrationId = serializers.CharField(source="Patient.RegistrationId", read_only=True)
+    PatientName = serializers.SerializerMethodField()
     Doctor = serializers.PrimaryKeyRelatedField(source="Doctor.id", read_only=True)
 
     class Meta:
@@ -42,10 +43,13 @@ class AppointmentGetSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "RegistrationId",
-            "Patient",
+            "PatientName",
             "Doctor",
             "Treatment",
             "Date",
             "Duration",
             "status",
         ]
+
+    def get_PatientName(self, obj):
+        return f"{obj.Patient.FirstName} {obj.Patient.LastName}" if obj.Patient else None
