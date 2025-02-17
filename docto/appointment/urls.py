@@ -16,4 +16,5 @@ urlpatterns = [
     path('MissedAppointments/', MissedAppointments.as_view(), name='appointmentbydoctor'),
     path("UpComingAppointmentsToday/", UpComingAppointmentsToday.as_view(), name="UpComingAppointmentsToday"),
     path("AppointmentsByMonth/", AppointmentsByMonth.as_view(), name="AppointmentsByMonth"),
+    path("patentappointmentbydoctorid/<int:id>", patentappointmentbydoctorid.as_view(), name="AppointmentsByDoctor"),
 ]
