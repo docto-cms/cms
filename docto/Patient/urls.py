@@ -7,4 +7,6 @@ urlpatterns = [
     path('basicinfo/', BasicInfoAPIView.as_view(), name='basicinfo-list'),#Quick entry
     path("doctor/", DoctorDetailAPIView.as_view(), name="doctor"),
     path("todayspatients/", TodaysPatientListAPIView.as_view(), name="todayspatients"),
+    path("PatientsBeforeThisMonth/", PatientsBeforeThisMonth.as_view(), name="PatientsBeforeThisMonth"),
+    path("NewPatientsOfMonth/", NewPatientsOfMonth.as_view(), name="NewPatientsOfMonth"),
 ]
