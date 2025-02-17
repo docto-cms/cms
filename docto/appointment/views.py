@@ -72,6 +72,7 @@ class AppointmentMobileAPIView(APIView):
                 )
 
                 if overlapping_doctor.exists():
+                    appointment.status = "Decline"
                     return Response({"error": "Doctor is not available at this time"}, status=status.HTTP_400_BAD_REQUEST)
 
                 # Ensure doctor_instance is included while creating the patient
@@ -93,7 +94,6 @@ class AppointmentMobileAPIView(APIView):
 
                 if overlapping_patient.exists():
                     appointment.status = "Decline"
-                    appointment.save()
                     return Response({"error": "Patient is already booked at this time"}, status=status.HTTP_400_BAD_REQUEST)
 
                 appointment_obj = Appointments.objects.create(
@@ -103,11 +103,9 @@ class AppointmentMobileAPIView(APIView):
                     Notes=appointment.notes,
                     Date=appointment_date,
                     Duration=duration,
-                    status="Accept",
                 )
+                appointment.delete()
 
-                appointment.status = new_status
-                appointment.save()
 
                 return Response(
                     {
@@ -118,11 +116,13 @@ class AppointmentMobileAPIView(APIView):
                     },
                     status=status.HTTP_200_OK
                 )
+            
+            if new_status=="Decline":
+                appointment.delete()
+                return Response({"message":"Delete Successfully"})
 
-            appointment.status = new_status
-            appointment.save()
             return Response({"message": "Appointment status updated"}, status=status.HTTP_200_OK)
-
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     
@@ -394,6 +394,18 @@ class UpdateAppointmentStatusAPIView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
+# patentappointmentbydoctorid
+class patentappointmentbydoctorid(APIView):
+    def get(self, request, id):
+        try:
+            doctor = Doctor.objects.get(id=id)
+        except Doctor.DoesNotExist:
+            return Response({"error": "Doctor not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        appointments = PatientAppointment.objects.filter(doctor=doctor)
+        serializer = PatientAppointmentSerializer(appointments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
 
 class DocterAppointmentByDoctorId(APIView):
     def get(self, request, id):
@@ -454,3 +466,4 @@ class AppointmentsByMonth(APIView):
         for month in months:
             data[month] = appointments.filter(Date__month=months.index(month) + 1).count()
         return Response(data, status=status.HTTP_200_OK)
+
