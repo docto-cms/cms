@@ -11,4 +11,10 @@ urlpatterns = [
     path('appointmentdelete/', AppointmentDeleteView.as_view(), name='appointmentdelete'),
     path('appointments/<int:appointment_id>', UpdateAppointmentStatusAPIView.as_view(), name='apoointments-update-status'),
     path('upacomingappointments/',UpcomingAppointmentsAPIView.as_view(), name='upcoming'),
+    path('DocterAppointmentByDocterId/<int:id>', DocterAppointmentByDoctorId.as_view(), name='appointment-details'),
+    path('appointmentbydate/', TodayAppointmentsAPIView.as_view(), name='appointmentbydate'),
+    path('TotalCanceledAppointments/', TotalCanceledAppointments.as_view(), name='appointmentbydoctor'),
+    path('upcomingappointments/', UpcomingAppointments.as_view(), name='appointmentbydoctor'),
+    path('MissedAppointments/', MissedAppointments.as_view(), name='appointmentbydoctor'),
+    path("UpComingAppointments/", UpComingAppointments.as_view(), name="UpComingAppointments"),
 ]
