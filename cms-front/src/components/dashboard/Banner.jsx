@@ -8,11 +8,7 @@ export default function Banner() {
   const [missedAppointmentData, setMissedAppointmentData] = useState([]);
   const [UpComingAppointmentsData, setUpComingAppointmentsData] = useState([]);
   const [todayPatientsData, setTodayPatientsData] = useState([]);
-  const [cancledAppointmentData, setCancledAppointmentData] = useState([]);
-  console.log("app",appointmentData);
-  console.log("miss",missedAppointmentData);
-  console.log("up",UpComingAppointmentsData);
-  
+  const [cancledAppointmentData, setCancledAppointmentData] = useState([]);  
   
   async function fetchData(url, setter) {
     try {
