@@ -80,7 +80,8 @@ export default function TodayPatient() {
   const searchedAppointments = filteredAppointments.filter((appointment) => {
     const searchLower = searchTerm.toLowerCase();
     return (
-      appointment.Name.toLowerCase().includes(searchLower)
+      appointment.Name.toLowerCase().includes(searchLower)||
+      appointment.RegistrationId.toString().includes(searchTerm.toString())
     );
   });
 
