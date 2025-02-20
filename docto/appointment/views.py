@@ -46,7 +46,7 @@ class AppointmentMobileAPIView(APIView):
         serializer = AppointmentUpdateSerializer(appointment, data=request.data, partial=True)
         if serializer.is_valid():
             new_status = serializer.validated_data.get("status")
-
+            print(new_status)
             if new_status == "Accept":
                 if not appointment.doctor:
                     return Response({"error": "Doctor field is missing in appointment"}, status=status.HTTP_400_BAD_REQUEST)
