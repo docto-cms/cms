@@ -43,7 +43,9 @@ INSTALLED_APPS = [
     'Patient',
     'rest_framework',
     'corsheaders',
-    
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -57,12 +59,14 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
 ]
 CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5175",  # Allow frontend access
     "http://localhost:5173",  # Allow frontend access
+    "http://localhost:5174",  # Allow frontend access
 ]
-
+CSRF_TRUSTED_ORIGINS = ["http://localhost:5174"]
 CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins
 CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"]
-# CORS_ALLOW_HEADERS = [""]  # Allow all headers
+CORS_ALLOW_HEADERS = ["*"]  # Allow all headers
 CORS_ALLOW_CREDENTIALS = True  # Allow credentials (cookies)
 SESSION_COOKIE_SECURE = True  
 
@@ -143,10 +147,12 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
 }
+
+OTP_EXPIRY_MINUTES = 5
 
 # Email Settings (Use your own SMTP settings)
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
@@ -157,15 +163,8 @@ EMAIL_HOST_USER = "techdproject@gmail.com"
 EMAIL_HOST_PASSWORD = "bqpr jqbp uxrc tkfo"
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-    "ROTATE_REFRESH_TOKENS": False,
-    "BLACKLIST_AFTER_ROTATION": True,
-    "AUTH_HEADER_TYPES": ("Bearer",),
-    "AUTH_COOKIE": "access_token",  # ✅ Set JWT token in cookie
-    "AUTH_COOKIE_REFRESH": "refresh_token",
-    "AUTH_COOKIE_SECURE": False,  # Change to True in production
-    "AUTH_COOKIE_HTTP_ONLY": True,
-    "AUTH_COOKIE_PATH": "/",
-    "AUTH_COOKIE_SAMESITE": "Lax",
+    'USER_ID_FIELD': 'id',  # The field in your User model that acts as the unique identifier
+    'USER_ID_CLAIM': 'user_id',  # The claim in the JWT payload that stores the user ID
 }
+
+AUTH_USER_MODEL = 'register.User'  # Replace 'register' with your app name

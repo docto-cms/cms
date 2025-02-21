@@ -1,6 +1,12 @@
 from rest_framework import serializers
+from .models import User
 
-class LoginSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
-    password = serializers.CharField(write_only=True, required=True)
-    clinic_id = serializers.CharField(required=True)
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name', 'clinic_id', 'phone_number', 'email']
+
+class DoctorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'clinic_id', 'phone_number', 'email']

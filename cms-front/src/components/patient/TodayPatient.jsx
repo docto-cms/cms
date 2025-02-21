@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from 'react-router-dom';
 import PropTypes from "prop-types";
 
 export default function TodayPatient() {
@@ -7,9 +8,9 @@ export default function TodayPatient() {
   const [patientData, setPatientData] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [filteredAppointments, setFilteredAppointments] = useState([]);
-  const [appointmentData, setAppointmentData] = useState([]);
   const [missedAppointmentData, setMissedAppointmentData] = useState([]);
-  const [UpComingAppointmentsData, setUpComingAppointmentsData] = useState([]);
+  const [upComingAppointmentsData, setUpComingAppointmentsData] = useState([]);
+  const [upComingAppointmentsWeek, setUpComingAppointmentsWeek] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState("appointment");
 
   // Pagination state
@@ -22,6 +23,12 @@ export default function TodayPatient() {
   // Loading and error states
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const location = useLocation();
+  const initialStatus = location.state?.selectedStatus || "appointment";
+  useEffect(() => {
+    setSelectedStatus(initialStatus);
+  }, [initialStatus]);
 
   async function fetchData(url, setter) {
     try {
@@ -44,9 +51,9 @@ export default function TodayPatient() {
     fetchData("http://localhost:8000/Patient/doctor/", setDoctors);
     fetchData("http://localhost:8000/Patient/patients/", setPatientData);
     fetchData("http://localhost:8000/appointment/appointmentbydate/", setAppointments);
-    fetchData("http://localhost:8000/appointment/appointmentbydate/", setAppointmentData);
     fetchData("http://localhost:8000/appointment/MissedAppointments/", setMissedAppointmentData);
     fetchData("http://localhost:8000/appointment/UpComingAppointmentsToday/", setUpComingAppointmentsData);
+    fetchData("http://localhost:8000/appointment/upcomingappointmentsWeek/", setUpComingAppointmentsWeek);
   }, []);
 
   // Filter appointments based on selected doctor and status
@@ -58,9 +65,11 @@ export default function TodayPatient() {
     }
 
     if (selectedStatus === "UpComingAppointments") {
-      filtered = UpComingAppointmentsData;
+      filtered = upComingAppointmentsData;
     } else if (selectedStatus === "missedAppointment") {
       filtered = missedAppointmentData;
+    }else if (selectedStatus === "UpComingAppointmentsWeek") {
+      filtered = upComingAppointmentsWeek;
     }
 
     const enrichedAppointments = filtered.map(appointment => {
@@ -74,13 +83,13 @@ export default function TodayPatient() {
 
     setFilteredAppointments(enrichedAppointments);
     setCurrentPage(1); // Reset to the first page when filtering changes
-  }, [selectedDoctor, selectedStatus, appointments, patientData, UpComingAppointmentsData, missedAppointmentData]);
+  }, [selectedDoctor, selectedStatus, appointments, patientData, upComingAppointmentsData, missedAppointmentData]);
 
   // Filter appointments based on search term
   const searchedAppointments = filteredAppointments.filter((appointment) => {
     const searchLower = searchTerm.toLowerCase();
     return (
-      appointment.Name.toLowerCase().includes(searchLower)||
+      appointment.Name.toLowerCase().includes(searchLower) ||
       appointment.RegistrationId.toString().includes(searchTerm.toString())
     );
   });
@@ -261,9 +270,8 @@ TodayPatient.propTypes = {
   patientData: PropTypes.array,
   appointments: PropTypes.array,
   filteredAppointments: PropTypes.array,
-  appointmentData: PropTypes.array,
   missedAppointmentData: PropTypes.array,
-  UpComingAppointmentsData: PropTypes.array,
+  upComingAppointmentsData: PropTypes.array,
   selectedDoctor: PropTypes.string,
   selectedStatus: PropTypes.string,
   currentPage: PropTypes.number,

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { postData } from "../API/Axios"; // Ensure correct API path
+
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai"; // Import React Icons
 import axios from "axios";
 
@@ -62,7 +62,7 @@ export default function LoginForm() {
 
     try {
         // Send login request to the backend
-        const response = await axios.post("http://127.0.0.1:8000/login", formData);
+        const response = await axios.post("http://127.0.0.1:8000/login/", formData);
 
         // Handle successful login
         setMessage("Login successful! Redirecting...");
@@ -77,10 +77,10 @@ export default function LoginForm() {
       
 
         // Redirect to the dashboard after a short delay
-        setTimeout(() => {
-            navigate("/"); // Redirect to the dashboard
-            setFormData({ email: "", password: "", clinic_id: "" }); // Reset form fields
-        }, 1000);
+          setTimeout(() => {
+              navigate("/"); // Redirect to the dashboard
+              setFormData({ email: "", password: "", clinic_id: "" }); // Reset form fields
+          }, 1000);
 
         // Clear any previous errors
         setErrors({});

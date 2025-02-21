@@ -7,15 +7,29 @@ const ProtectedRoute = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        // ✅ Send a request to the backend to check authentication
-        await axios.get("http://127.0.0.1:8000/auth-check/", { withCredentials: true });
-        setIsAuthenticated(true); // User is authenticated
-      } catch (error) {
-        console.error("Authentication check failed:", error);
-        setIsAuthenticated(false); // User is not authenticated
+      const token = localStorage.getItem("access_token"); // Retrieve token from local storage
+  
+      if (!token) {
+          console.error("No token found!");
+          return false;
       }
-    };
+      console.log("Token found:", token);
+      
+  
+      try {
+          const response = await axios.get("http://127.0.0.1:8000/session/", {
+              headers: {
+                  Authorization: `Bearer ${token}`,  // Send token in Authorization header
+              },
+          });
+  
+          console.log("Authenticated:", response.data);
+          return true;
+      } catch (error) {
+          console.error("Authentication check failed:", error);
+          return false;
+      }
+  };
 
     checkAuth(); // Call the function to check authentication
   }, []);

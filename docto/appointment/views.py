@@ -136,7 +136,7 @@ class AppointmentMobileAPIView(APIView):
     #     except PatientAppointment.DoesNotExist:
     #         return Response({"error": "Appointment not found"}, status=status.HTTP_404_NOT_FOUND)
 
-
+    
 class EditAppointmentMobileAPIView(APIView):
     """
     API to edit doctor and date for a specific appointment.
@@ -192,6 +192,8 @@ class AppointmentAPIView(APIView):
         if appointment_date is None:
             return Response({"error": "Invalid date format"}, status=status.HTTP_400_BAD_REQUEST)
 
+        if appointment_date < now():
+            return Response({"error": "Appointment date should be in the future"}, status=status.HTTP_400_BAD_REQUEST)
        
         if is_naive(appointment_date):
             appointment_date = make_aware(appointment_date)
@@ -204,21 +206,15 @@ class AppointmentAPIView(APIView):
     
         appointment_end_time = appointment_date + timedelta(minutes=duration)
 
-      
-        overlapping_doctor = Appointments.objects.filter(
-            Doctor=doctor_instance
-        ).filter(
-            Q(Date__lt=appointment_end_time, Date__gte=appointment_date) | 
-            Q(Date__lte=appointment_date, Date__gt=appointment_date)
-        )
+        statusError = Appointments.objects.filter(status__in=['Scheduled', 'Waiting', 'Engaged'])
+        print(statusError)
 
-        overlapping_doctor = Appointments.objects.filter(
-            Doctor=doctor_instance
-        ).filter(
-            Date__lt=appointment_end_time, 
-            Date__gte=appointment_date - timedelta(minutes=(duration-1)), 
+        overlapping_doctor = statusError.filter(
+            Doctor=doctor_instance,
+            Date__lt=appointment_end_time,
+            Date__gte=appointment_date - timedelta(minutes=(duration - 1))
         )
-
+        print(overlapping_doctor)
         if overlapping_doctor.exists():
             return Response({"error": "Doctor is not available at this time"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -235,7 +231,7 @@ class AppointmentAPIView(APIView):
                 "Doctor": doctor_instance,
             },
         )
-        
+
         overlapping_patient = Appointments.objects.filter(
             Patient=patient_instance
         ).filter(
@@ -356,7 +352,7 @@ class UpdateAppointmentStatusAPIView(APIView):
     def patch(self, request, appointment_id):
         try:
             new_status = request.data.get('status')
-
+            print(new_status)
             if new_status not in ['Canceled', 'Done', 'Engaged', 'Waiting', 'Scheduled']: 
                 return Response({'error': 'Invalid status value'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -373,12 +369,15 @@ class UpdateAppointmentStatusAPIView(APIView):
                     return Response({'done': 'Engaged appointments can only be changed to Done or Canceled'}, status=status.HTTP_400_BAD_REQUEST)
 
             if appointment.status == 'Waiting': 
-                if new_status not in ['Engaged']:
+                if new_status not in ["Engaged"]:
                     return Response({'done': 'Waiting appointments can only be changed to Engaged'}, status=status.HTTP_400_BAD_REQUEST)
 
             if appointment.status == 'Scheduled': 
-                if new_status not in ['Engaged', 'Waiting']: 
-                    return Response({'done': 'Scheduled appointments can only be changed to Engaged or Waiting'}, status=status.HTTP_400_BAD_REQUEST)
+                if new_status not in ['Waiting',"Canceled"]: 
+                    return Response({'done': 'Scheduled appointments can only be changed to Engaged or Canceled'}, status=status.HTTP_400_BAD_REQUEST)
+
+            if appointment.status == 'Canceled': 
+                return Response({'done': 'Canceled appointments cannot be changed'}, status=status.HTTP_400_BAD_REQUEST)
 
             appointment.status = new_status
             appointment.save()
@@ -438,7 +437,6 @@ class UpcomingAppointmentsWeek(APIView):
         next_week = today + timedelta(days=7)
         appointments = Appointments.objects.filter(Date__date__range=[today, next_week])
         serializer = AppointmentGetSerializer(appointments, many=True)
-        # print('appp',serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class MissedAppointments(APIView):
@@ -466,4 +464,3 @@ class AppointmentsByMonth(APIView):
         for month in months:
             data[month] = appointments.filter(Date__month=months.index(month) + 1).count()
         return Response(data, status=status.HTTP_200_OK)
-
