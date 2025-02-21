@@ -137,6 +137,23 @@ class LoginView(APIView):
         )
 
         return response
+
+class CheckSessionView(APIView):
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return Response(
+                {
+                    "isAuthenticated": True,
+                    "user": {
+                        "id": request.user.id,
+                        "name": f"{request.user.first_name} {request.user.second_name}",
+                        "email": request.user.email,
+                    },
+                },
+                status=status.HTTP_200_OK,
+            )
+        return Response({"isAuthenticated": False}, status=status.HTTP_200_OK)
+    
 class LogoutView(APIView):
     """
     API view for user logout.
