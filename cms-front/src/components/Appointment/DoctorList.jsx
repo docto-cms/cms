@@ -1,7 +1,7 @@
 import { select } from '@material-tailwind/react';
 import React, { useState, useEffect } from 'react';
 
-export default function DoctorList({id, setId}) {
+export default function DoctorList({id, setId ,}) {
   const [doctors, setDoctors] = useState([]);
   const [doctorsCount, setDoctorsCount] = useState({});
 
@@ -46,7 +46,7 @@ export default function DoctorList({id, setId}) {
           <span
             onClick={() => setId(doctor.id)} // Set the id of the selected doctor
             key={doctor.id} // Using doctor.id as the key
-            className={`flex items-center justify-between mb-3  py-1 px-4 rounded-md last:mb-0 cursor-pointer ${id === doctor.id ? " bg-black    " : ""}` }
+            className={`flex items-center justify-between mb-3  py-1 px-4 rounded-md last:mb-0 cursor-pointer ${id === doctor.id ? "bg-gray-200   " : ""}` }
           >
             <div className="flex items-center">
               <span

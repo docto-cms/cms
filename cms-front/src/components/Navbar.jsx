@@ -2,11 +2,59 @@ import { CircleUser } from "lucide-react";
 import React, { useState } from "react";
 import { FaBars } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function Navbar({ toggleSidebar, SidebarOpen }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+
+
+  // Handles logout process
+  const handleLogout = async () => {
+    try {
+      const refreshToken = localStorage.getItem("refresh_token");
+  
+      if (!refreshToken) {
+        console.error("No refresh token found!");
+        return;
+      }
+  
+      // Send logout request with refresh token
+      const response = await axios.post('http://localhost:8000/logout', {
+        refresh_token: refreshToken,
+      });
+  
+      console.log("Logout successful:", response.data);
+  
+      // Clear tokens from localStorage
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+  
+      // Clear tokens from memory (if stored in state)
+   
+  
+      // Redirect to the login page
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error.response?.data || error.message);
+  
+      // Clear tokens even if logout fails (e.g., token is expired)
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+    
+      navigate('/login');
+    }
+  };
+
+// // ✅ Helper function to read cookies
+// function getCookie(name) {
+//     const cookie = document.cookie
+//         .split("; ")
+//         .find(row => row.startsWith(name + "="));
+//     return cookie ? cookie.split("=")[1] : null;
+// }
+
 
   // Handles navigation
   const handleMenuClick = (item) => {
@@ -15,15 +63,14 @@ export default function Navbar({ toggleSidebar, SidebarOpen }) {
     } else if (item === "Change Password") {
       navigate("/change-password");
     } else if (item === "Sign Out") {
-      // Add logout logic (clear token, redirect)
-      console.log("Signing out...");
+      handleLogout(); // ✅ Call logout function
     }
     setIsMenuOpen(false); // Close menu after clicking
   };
 
   return (
     <nav
-      className={`bg-blue-700 fixed z-50 shadow-md px-6 py-4 flex items-center justify-between transition-all duration-300 ${
+      className={`bg-[#177e83] fixed z-50 shadow-md px-6 py-4 flex items-center justify-between transition-all duration-300 ${
         SidebarOpen ? "w-[calc(100%-16rem)]" : "w-[calc(100%-4rem)]"
       }`}
     >

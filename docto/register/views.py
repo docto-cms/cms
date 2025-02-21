@@ -1,4 +1,5 @@
 from rest_framework.views import APIView
+from django.contrib.auth import authenticate, get_user_model    
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
@@ -13,6 +14,9 @@ from django.contrib.auth.hashers import check_password
 from django.utils import timezone
 from django.core.mail import send_mail
 import random
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import AccessToken
+from django.http import JsonResponse
 
 
 class RegisterView(APIView):  
@@ -82,85 +86,103 @@ class RegisterView(APIView):
         )
     
 
+# class AuthCheckView(APIView):
+#     def get(self, request):
+#         # ✅ Extract token from cookies
+#         access_token = request.COOKIES.get("access_token")
+#         if not access_token:
+#             return JsonResponse({"error": "No access token found"}, status=401)
+
+#         try:
+#             # ✅ Manually validate token
+#             token = AccessToken(access_token)  
+#             return Response({"message": "User is authenticated", "user_id": token["user_id"]})
+#         except Exception:
+#             return JsonResponse({"error": "Invalid or expired token"}, status=401)
+
+class CheckSessionView(APIView):
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return Response(
+                {
+                    "isAuthenticated": True,
+                    "user": {
+                        "id": request.user.id,
+                        "name": f"{request.user.first_name} {request.user.second_name}",
+                        "email": request.user.email,
+                    },
+                },
+                status=status.HTTP_200_OK,
+            )
+        return Response({"isAuthenticated": False}, status=status.HTTP_200_OK)
+
+
 class LoginView(APIView):
     """
-    API view for user login. It returns a JWT token as cookies upon successful authentication.
+    API view for user login using JWT tokens.
+    Tokens are returned in the response body (not in cookies).
     """
 
     def post(self, request, *args, **kwargs):
-        email = request.data.get('email')
-        password = request.data.get('password')
-        clinic_id = request.data.get('clinic_id')
+        email = request.data.get("email")
+        password = request.data.get("password")
+        clinic_id = request.data.get("clinic_id")
 
-        # Validate input
+        # Validate input fields
         if not email or not password or not clinic_id:
-            raise ValidationError("email, password, and clinic_id are required fields.")
+            raise AuthenticationFailed("Email, password, and clinic_id are required.")
 
-        # Authenticate user
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            raise AuthenticationFailed("Invalid username or password.")
+            raise AuthenticationFailed("Invalid email or password.")  # Prevents leaking user existence
 
-        # Manually hash and check the password
-        if not check_password(password, user.password):
-            raise AuthenticationFailed("Invalid username or password.")
+        # Manually verify password
+        if not check_password(password, user.password):  
+            raise AuthenticationFailed("Invalid email or password.")
 
-        # Create JWT token
+        # Verify Clinic ID
+        try:
+            if user.clinic_id != int(clinic_id):  
+                raise AuthenticationFailed("Clinic ID is incorrect.")
+        except ValueError:
+            raise AuthenticationFailed("Invalid Clinic ID format. Clinic ID must be a number.")
+
+        # Generate JWT tokens
         refresh = RefreshToken.for_user(user)
-        access_token = refresh.access_token
+        access_token = str(refresh.access_token)
+        refresh_token = str(refresh)
 
         # Prepare response
-        response = Response(
-            {
-                'user': f"{user.first_name} {user.last_name}",
+        response_data = {
+            "user": {
+                "first_name": user.first_name,
+                "second_name": user.second_name,
+                "email": user.email,
+                "clinic_id": user.clinic_id,
             },
-            status=status.HTTP_200_OK
-        )
+            "access_token": access_token,  # Return access token in the response body
+            "refresh_token": refresh_token,  # Return refresh token in the response body
+        }
 
-        # Set cookies with tokens
-        response.set_cookie(
-            key='refresh_token',
-            value=str(refresh),
-            httponly=True,
-            secure=True,  # Set to True if using HTTPS
-            samesite='Lax',  # Adjust based on your requirements
-            max_age=60 * 60 * 24 * 7,  # 1 week
-        )
-        response.set_cookie(
-            key='access_token',
-            value=str(access_token),
-            httponly=True,
-            secure=True,  # Set to True if using HTTPS
-            samesite='Lax',  # Adjust based on your requirements
-            max_age=60 * 60,  # 1 hour
-        )
-
-        return response
+        return Response(response_data, status=status.HTTP_200_OK)
 class LogoutView(APIView):
     """
-    API view for user logout.
+    API view for user logout. Invalidates the refresh token.
     """
 
     def post(self, request, *args, **kwargs):
-        # Extract the refresh token from the request
-        refresh_token = request.data.get('refresh_token')
-
-        if not refresh_token:
-            return Response({"error": _("Refresh token is required.")}, status=status.HTTP_400_BAD_REQUEST)
-
         try:
-            # Blacklist the refresh token
-            token = RefreshToken(refresh_token)
-            token.blacklist()
-            return Response({"message": _("Logged out successfully.")}, status=status.HTTP_200_OK)
+            refresh_token = request.data.get("refresh_token")
+            if not refresh_token:
+                return Response({"detail": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
 
+            token = RefreshToken(refresh_token)
+            token.blacklist()  # Add the token to the blacklist
+            return Response({"detail": "Logged out successfully."}, status=status.HTTP_200_OK)
         except Exception as e:
-            # Log the error with traceback for debugging
-            import traceback
-            print(f"Logout error: {str(e)}") 
-            print(traceback.format_exc())
-            return Response({"error": _("Invalid or expired token.")}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ChangePassword(APIView):
 
