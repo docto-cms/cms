@@ -9,6 +9,18 @@ export default function AppointmentBanner() {
 
   const navigate = useNavigate();
 
+  const appointment = () => {
+    navigate('/today-patient', { state: { selectedStatus: 'appointment' } });
+  };
+
+  const UpComingAppointments =()=>{
+    navigate('/today-patient', { state: { selectedStatus: 'UpComingAppointmentsWeek' } });
+  };
+
+  const missedAppointments =()=>{
+    navigate('/today-patient', { state: { selectedStatus: 'missedAppointment' } });
+  };
+
   async function fetchData(url, setter) {
     try {
       const response = await fetch(url);
@@ -31,7 +43,7 @@ export default function AppointmentBanner() {
         {/* Today's Appointments */}
         <div
           className="flex items-center bg-white p-6 cursor-pointer hover:shadow-md"
-          onClick={() => navigate('/total-appointments')}
+          onClick={appointment}
         >
           <div className="text-blue-500 text-4xl">
             <FaRegCalendarDays />
@@ -47,7 +59,9 @@ export default function AppointmentBanner() {
           <div className="text-red-500 text-4xl">
             <FaRegCalendarDays />
           </div>
-          <div className="ml-auto text-right">
+          <div className="ml-auto text-right"
+          onClick={UpComingAppointments}
+          >
             <p className="text-3xl font-bold">{upComingAppointmentsData.length}</p>
             <p className="text-gray-600">Upcoming Appointments this week</p>
           </div>
@@ -58,7 +72,9 @@ export default function AppointmentBanner() {
           <div className="text-green-500 text-4xl">
             <FaRegCalendar />
           </div>
-          <div className="ml-auto text-right">
+          <div className="ml-auto text-right"
+          onClick={missedAppointments}
+          >
             <p className="text-3xl font-bold">{missedAppointmentData.length}</p>
             <p className="text-gray-600">Today Missed Appointments</p>
           </div>

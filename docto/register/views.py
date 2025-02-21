@@ -1,30 +1,29 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.contrib.auth.models import User
-from rest_framework.exceptions import ValidationError
-from django.contrib.auth.hashers import make_password
-import re
-from rest_framework.exceptions import AuthenticationFailed
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.exceptions import ValidationError, AuthenticationFailed
+from django.contrib.auth.hashers import make_password, check_password
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils.translation import gettext_lazy as _
-from .models import *
-from django.contrib.auth.hashers import check_password
 from django.utils import timezone
 from django.core.mail import send_mail
+from django.conf import settings
+import re
 import random
+from rest_framework_simplejwt.tokens import RefreshToken
+from .models import User, OtpToken
+from .serializers import UserSerializer, DoctorSerializer
 
-
-class RegisterView(APIView):  
+class RegisterView(APIView):
     """
     API view for user registration.
     """
 
     def post(self, request, *args, **kwargs):
-
         # Extract data from the request
         first_name = request.data.get('first_name')
-        second_name = request.data.get('second_name')
+        last_name = request.data.get('last_name')
         clinic_id = request.data.get('clinic_id')
         phone_number = request.data.get('phone_number')
         email = request.data.get('email')
@@ -32,39 +31,41 @@ class RegisterView(APIView):
         confirm_password = request.data.get('confirm_password')
 
         # Validate input
-        if not password or not email or not first_name or not second_name or not clinic_id or not phone_number or not confirm_password:
-            raise ValidationError("All details are required fields.")
+        if not all([first_name, last_name, clinic_id, phone_number, email, password, confirm_password]):
+            raise ValidationError("All fields are required.")
 
-        # Password validation (example rules: minimum 8 characters, must include a number and a special character)
+        # Validate email format
+        try:
+            validate_email(email)
+        except DjangoValidationError:
+            raise ValidationError("Invalid email format.")
+
+        # Password validation
         if len(password) < 8 or not re.search(r'\d', password) or not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
             raise ValidationError(
                 "Password must be at least 8 characters long, include at least one number, and one special character."
             )
-        
-        # mobile number validation
-        if len(phone_number)<10 or len(phone_number)>10:
-            raise ValidationError(
-                "Phone Number should be 10 digits"
-            )
-        
-        # checking confirm password
-        if password!=confirm_password:
-            raise ValidationError(
-                "The password and confirm password should be same"
-            )
-        
-        # Check if email or phone number or clinic id already exists
+
+        # Phone number validation
+        if len(phone_number) != 10 or not phone_number.isdigit():
+            raise ValidationError("Phone number must be 10 digits.")
+
+        # Confirm password validation
+        if password != confirm_password:
+            raise ValidationError("Passwords do not match.")
+
+        # Check if email, phone number, or clinic ID already exists
         if User.objects.filter(email=email).exists():
             return Response({"error": "Email already registered."}, status=status.HTTP_400_BAD_REQUEST)
         if User.objects.filter(phone_number=phone_number).exists():
-            return Response({"error": "phone number already registered."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Phone number already registered."}, status=status.HTTP_400_BAD_REQUEST)
         if User.objects.filter(clinic_id=clinic_id).exists():
-            return Response({"error": "clinic id already registered."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Clinic ID already registered."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Create user
         user = User.objects.create(
             first_name=first_name,
-            second_name=second_name,
+            last_name=last_name,
             clinic_id=clinic_id,
             phone_number=phone_number,
             email=email,
@@ -72,19 +73,13 @@ class RegisterView(APIView):
         )
 
         # Return success response
-        return Response(
-            {
-                "id": user.id,
-                "name": user.first_name+user.second_name,
-                "email": user.email,
-            },
-            status=status.HTTP_201_CREATED,
-        )
-    
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 class LoginView(APIView):
     """
-    API view for user login. It returns a JWT token as cookies upon successful authentication.
+    API view for user login. Returns JWT tokens as cookies.
     """
 
     def post(self, request, *args, **kwargs):
@@ -93,20 +88,20 @@ class LoginView(APIView):
         clinic_id = request.data.get('clinic_id')
 
         # Validate input
-        if not email or not password or not clinic_id:
-            raise ValidationError("email, password, and clinic_id are required fields.")
+        if not all([email, password, clinic_id]):
+            raise ValidationError("Email, password, and clinic ID are required.")
 
         # Authenticate user
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(email=email, clinic_id=clinic_id)
         except User.DoesNotExist:
-            raise AuthenticationFailed("Invalid username or password.")
+            raise AuthenticationFailed("Invalid email, password, or clinic ID.")
 
-        # Manually hash and check the password
+        # Check password
         if not check_password(password, user.password):
-            raise AuthenticationFailed("Invalid username or password.")
+            raise AuthenticationFailed("Invalid email, password, or clinic ID.")
 
-        # Create JWT token
+        # Generate JWT tokens
         refresh = RefreshToken.for_user(user)
         access_token = refresh.access_token
 
@@ -114,6 +109,9 @@ class LoginView(APIView):
         response = Response(
             {
                 'user': f"{user.first_name} {user.last_name}",
+                'clinic_id': user.clinic_id,
+                "refresh": str(refresh),
+                "access": str(access_token),
             },
             status=status.HTTP_200_OK
         )
@@ -124,7 +122,7 @@ class LoginView(APIView):
             value=str(refresh),
             httponly=True,
             secure=True,  # Set to True if using HTTPS
-            samesite='Lax',  # Adjust based on your requirements
+            samesite='Lax',
             max_age=60 * 60 * 24 * 7,  # 1 week
         )
         response.set_cookie(
@@ -132,69 +130,96 @@ class LoginView(APIView):
             value=str(access_token),
             httponly=True,
             secure=True,  # Set to True if using HTTPS
-            samesite='Lax',  # Adjust based on your requirements
+            samesite='Lax',
             max_age=60 * 60,  # 1 hour
         )
 
         return response
+
+
+class CheckSessionView(APIView):
+    """
+    API view to check if the user is authenticated.
+    """
+
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            serializer = UserSerializer(request.user)
+            return Response(
+                {
+                    "isAuthenticated": True,
+                    "user": serializer.data,
+                },
+                status=status.HTTP_200_OK,
+            )
+        return Response({"isAuthenticated": False}, status=status.HTTP_200_OK)
+
+
 class LogoutView(APIView):
     """
     API view for user logout.
     """
 
     def post(self, request, *args, **kwargs):
-        # Extract the refresh token from the request
-        refresh_token = request.data.get('refresh_token')
-
+        refresh_token = request.COOKIES.get('refresh_token')
         if not refresh_token:
             return Response({"error": _("Refresh token is required.")}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Blacklist the refresh token
             token = RefreshToken(refresh_token)
             token.blacklist()
             return Response({"message": _("Logged out successfully.")}, status=status.HTTP_200_OK)
-
         except Exception as e:
-            # Log the error with traceback for debugging
-            import traceback
-            print(f"Logout error: {str(e)}") 
-            print(traceback.format_exc())
             return Response({"error": _("Invalid or expired token.")}, status=status.HTTP_400_BAD_REQUEST)
 
+
 class ChangePassword(APIView):
+    """
+    API view for changing user password.
+    """
 
     def put(self, request, *args, **kwargs):
         email = request.data.get('email')
-        old_password=request.data.get("old_password")
-        new_password=request.data.get("new_password")
+        old_password = request.data.get('old_password')
+        new_password = request.data.get('new_password')
         confirm_password = request.data.get('confirm_password')
-        user = User.objects.get(email=email)
 
-        if not email or not old_password or not new_password or not confirm_password:
-            raise ValidationError("email , password and clinic_id are required fields.")
+        # Validate input
+        if not all([email, old_password, new_password, confirm_password]):
+            raise ValidationError("All fields are required.")
 
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             raise AuthenticationFailed("User with this email does not exist.")
 
+        # Check old password
         if not check_password(old_password, user.password):
-            raise AuthenticationFailed("old password is incorrect")
+            raise AuthenticationFailed("Old password is incorrect.")
 
-        if check_password(new_password, user.password):
-            raise AuthenticationFailed("new pasword is same as old password")
-        
-        if new_password!=confirm_password:
-            raise ValidationError("new_password & confirm_password should be same ")
+        # Check new password complexity
+        if len(new_password) < 8 or not re.search(r'\d', new_password) or not re.search(r'[!@#$%^&*(),.?":{}|<>]', new_password):
+            raise ValidationError(
+                "Password must be at least 8 characters long, include at least one number, and one special character."
+            )
 
-        user.password=make_password(new_password)
+        # Check if new password matches confirm password
+        if new_password != confirm_password:
+            raise ValidationError("New password and confirm password do not match.")
+
+        # Update password
+        user.password = make_password(new_password)
         user.save()
+
         return Response({"detail": "Password successfully changed."}, status=status.HTTP_200_OK)
 
-class send_otp(APIView):
-    def post(self,request):
-        """ Generates and sends an OTP for email verification before user creation """
+
+class SendOtp(APIView):
+    """
+    API view for sending OTP for email verification.
+    """
+
+    def post(self, request):
         email = request.data.get("email")
 
         if not email:
@@ -205,26 +230,32 @@ class send_otp(APIView):
 
         # Generate a new OTP
         otp_code = str(random.randint(100000, 999999))  # 6-digit OTP
-        otp = OtpToken.objects.create(email=email, otp_code=otp_code, otp_expires_at=timezone.now() + timezone.timedelta(minutes=5))
+        otp_expires_at = timezone.now() + timezone.timedelta(minutes=settings.OTP_EXPIRY_MINUTES)
+        otp = OtpToken.objects.create(email=email, otp_code=otp_code, otp_expires_at=otp_expires_at)
 
         # Send OTP email
         send_mail(
             subject="Your OTP Code",
-            message=f"Your OTP code is {otp.otp_code}. It expires in 5 minutes.",
-            from_email="your-email@gmail.com",
+            message=f"Your OTP code is {otp.otp_code}. It expires in {settings.OTP_EXPIRY_MINUTES} minutes.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[email],
             fail_silently=False
         )
 
         return Response({"message": "OTP sent to email"}, status=status.HTTP_200_OK)
-    
-class forgotPassword(APIView):
-    def post(self,request):
+
+
+class ForgotPassword(APIView):
+    """
+    API view for resetting password using OTP.
+    """
+
+    def post(self, request):
         email = request.data.get("email")
         new_password = request.data.get("new_password")
         otp_code = request.data.get("otp_code")
 
-        if not email or not new_password or not otp_code:
+        if not all([email, new_password, otp_code]):
             return Response({"error": "All fields are required"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -240,23 +271,17 @@ class forgotPassword(APIView):
         user.save()
 
         return Response({"message": "Password reset successfully"}, status=status.HTTP_200_OK)
-    
+
 
 class DoctorDetails(APIView):
-    def get(self,request,clinic_id):
-        
+    """
+    API view to retrieve doctor details by clinic ID.
+    """
+
+    def get(self, request, clinic_id):
         try:
             doctor = User.objects.get(clinic_id=clinic_id)
-            data = {
-            "first_name": doctor.first_name,
-            "second_name": doctor.second_name,
-            "clinic_id": doctor.clinic_id,
-            "phone_number": doctor.phone_number,
-            "email": doctor.email,
-            }
-            return Response(data)
+            serializer = DoctorSerializer(doctor)
+            return Response(serializer.data)
         except User.DoesNotExist:
-               return Response({"error": "Doctor not found"})
-
-
-    
+            return Response({"error": "Doctor not found"}, status=status.HTTP_404_NOT_FOUND)

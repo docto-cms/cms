@@ -42,7 +42,9 @@ INSTALLED_APPS = [
     'Patient',
     'rest_framework',
     'corsheaders',
-    
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -145,10 +147,12 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
 }
+
+OTP_EXPIRY_MINUTES = 5
 
 # Email Settings (Use your own SMTP settings)
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
@@ -157,3 +161,10 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "techdproject@gmail.com"
 EMAIL_HOST_PASSWORD = "bqpr jqbp uxrc tkfo"
+
+SIMPLE_JWT = {
+    'USER_ID_FIELD': 'id',  # The field in your User model that acts as the unique identifier
+    'USER_ID_CLAIM': 'user_id',  # The claim in the JWT payload that stores the user ID
+}
+
+AUTH_USER_MODEL = 'register.User'  # Replace 'register' with your app name
