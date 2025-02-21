@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { use } from "react";
+import timer from "../../assets/Dashboard images/timers.png";
 
 export default function Banner() {
-
   const [patientData, setPatientData] = useState([]);
   const [appointmentData, setAppointmentData] = useState([]);
   const [missedAppointmentData, setMissedAppointmentData] = useState([]);
   const [UpComingAppointmentsData, setUpComingAppointmentsData] = useState([]);
   const [todayPatientsData, setTodayPatientsData] = useState([]);
-  const [cancledAppointmentData, setCancledAppointmentData] = useState([]);  
-  
+  const [cancledAppointmentData, setCancledAppointmentData] = useState([]);
+
   async function fetchData(url, setter) {
     try {
       const response = await fetch(url);
@@ -22,18 +22,33 @@ export default function Banner() {
 
   useEffect(() => {
     fetchData("http://localhost:8000/Patient/patients/", setPatientData);
-    fetchData("http://localhost:8000/appointment/appointmentbydate/", setAppointmentData);
-    fetchData("http://localhost:8000/appointment/MissedAppointments/", setMissedAppointmentData);
-    fetchData("http://localhost:8000/appointment/UpComingAppointmentsToday/", setUpComingAppointmentsData);
-    fetchData("http://localhost:8000/Patient/todayspatients/", setTodayPatientsData);
-      fetchData("http://localhost:8000/appointment/TotalCanceledAppointments/", setCancledAppointmentData);
+    fetchData(
+      "http://localhost:8000/appointment/appointmentbydate/",
+      setAppointmentData
+    );
+    fetchData(
+      "http://localhost:8000/appointment/MissedAppointments/",
+      setMissedAppointmentData
+    );
+    fetchData(
+      "http://localhost:8000/appointment/UpComingAppointmentsToday/",
+      setUpComingAppointmentsData
+    );
+    fetchData(
+      "http://localhost:8000/Patient/todayspatients/",
+      setTodayPatientsData
+    );
+    fetchData(
+      "http://localhost:8000/appointment/TotalCanceledAppointments/",
+      setCancledAppointmentData
+    );
   }, []);
-  
+
   const [cardData, setCardData] = useState([
     {
-      label: "PATIENTS",
+      label: "Patients",
       count: "1",
-      bgColor: "bg-green-500",
+      bgColor: "white",
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -51,39 +66,15 @@ export default function Banner() {
       ),
     },
     {
-      label: "APPOINTMENTS",
+      label: "Appointments",
       count: "0",
-      bgColor: "bg-blue-400",
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="35px"
-          height="35px"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="icon icon-tabler icons-tabler-outline icon-tabler-calendar-check"
-        >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-          <path d="M11.5 21h-5.5a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v6" />
-          <path d="M16 3v4" />
-          <path d="M8 3v4" />
-          <path d="M4 11h16" />
-          <path d="M15 19l2 2l4 -4" />
-        </svg>
-      ),
-      extra: [
-        { text: "Missed 1", bgColor: "bg-red-600" },
-        { text: "Upcoming 0", bgColor: "bg-red-400" },
-      ],
+      bgColor: "",
+      icon: <img src={timer} alt="Timer" className="w-10 h-10" />,
     },
     {
-      label: "TODAY PATIENTS",
+      label: "Today patients",
       count: "0",
-      bgColor: "bg-purple-400",
+      bgColor: "",
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -95,7 +86,7 @@ export default function Banner() {
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="icon icon-tabler icons-tabler-outline icon-tabler-stethoscope"
+          className="icon icon-tabler icons-tabler-outline icon-tabler-stethoscope "
         >
           <path stroke="none" d="M0 0h24v24H0z" fill="none" />
           <path d="M6 4h-1a2 2 0 0 0 -2 2v3.5h0a5.5 5.5 0 0 0 11 0v-3.5a2 2 0 0 0 -2 -2h-1" />
@@ -107,9 +98,9 @@ export default function Banner() {
       ),
     },
     {
-      label: "TODAY CANCELLED APPOINTMENTS",
+      label: "Today Cancelled Appointments",
       count: "0",
-      bgColor: "bg-red-400",
+      bgColor: "",
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -157,7 +148,7 @@ export default function Banner() {
     );
   }, [appointmentData]);
 
-  // Update "APPOINTMENTS" card extra count when missedAppointmentData changes 
+  // Update "APPOINTMENTS" card extra count when missedAppointmentData changes
   useEffect(() => {
     setCardData((prevData) =>
       prevData.map((card) =>
@@ -165,8 +156,15 @@ export default function Banner() {
           ? {
               ...card,
               extra: [
-                { text: "Missed " + missedAppointmentData.length.toString(), bgColor: "bg-red-600" },
-                { text: "Upcoming " + UpComingAppointmentsData.length.toString(), bgColor: "bg-red-400" },
+                {
+                  text: "Missed " + missedAppointmentData.length.toString(),
+                  bgColor: "bg-red-600",
+                },
+                {
+                  text:
+                    "Upcoming " + UpComingAppointmentsData.length.toString(),
+                  bgColor: "bg-red-400",
+                },
               ],
             }
           : card
@@ -195,7 +193,6 @@ export default function Banner() {
       )
     );
   }, [cancledAppointmentData]);
-  
 
   return (
     <div className="p-6 font-poppins">
@@ -209,27 +206,15 @@ export default function Banner() {
         {cardData.map((card, index) => (
           <div
             key={index}
-            className={`${card.bgColor} text-white rounded-lg shadow-md p-6`}
+            className={`${card.bgColor}  rounded-lg p-6 border `}
           >
             <div className="flex items-center justify-between h-full">
               <div>
-                <h2 className="text-base font-semibold">{card.label}</h2>
+                <h2 className="text-base  text-black">{card.label}</h2>
                 <p className="text-3xl font-bold">{card.count}</p>
               </div>
-              <div>{card.icon}</div>
+              <div className="">{card.icon}</div>
             </div>
-            {card.extra && (
-              <div className="flex mt-2 space-x-2">
-                {card.extra.map((item, extraIndex) => (
-                  <span
-                    key={extraIndex}
-                    className={`${item.bgColor} px-2 py-1 rounded`}
-                  >
-                    {item.text}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
         ))}
       </div>

@@ -1,4 +1,5 @@
 from rest_framework.views import APIView
+from django.contrib.auth import authenticate, get_user_model    
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import ValidationError, AuthenticationFailed
@@ -11,9 +12,15 @@ from django.core.mail import send_mail
 from django.conf import settings
 import re
 import random
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import AccessToken
+from django.http import JsonResponse
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User, OtpToken
 from .serializers import UserSerializer, DoctorSerializer
+from django.contrib.auth.decorators import login_required
+from rest_framework.decorators import api_view, permission_classes
+
 
 class RegisterView(APIView):
     """
@@ -29,7 +36,15 @@ class RegisterView(APIView):
         email = request.data.get('email')
         password = request.data.get('password')
         confirm_password = request.data.get('confirm_password')
-
+        
+        
+        print(first_name)
+        print(last_name)
+        print(clinic_id)
+        print(phone_number)
+        print(email)
+        print(password)
+        print(confirm_password)
         # Validate input
         if not all([first_name, last_name, clinic_id, phone_number, email, password, confirm_password]):
             raise ValidationError("All fields are required.")
@@ -77,21 +92,53 @@ class RegisterView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+# class AuthCheckView(APIView):
+#     def get(self, request):
+#         # ✅ Extract token from cookies
+#         access_token = request.COOKIES.get("access_token")
+#         if not access_token:
+#             return JsonResponse({"error": "No access token found"}, status=401)
+
+#         try:
+#             # ✅ Manually validate token
+#             token = AccessToken(access_token)  
+#             return Response({"message": "User is authenticated", "user_id": token["user_id"]})
+#         except Exception:
+#             return JsonResponse({"error": "Invalid or expired token"}, status=401)
+
+
+
+class CheckSessionView(APIView):
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return Response(
+                {
+                    "isAuthenticated": True,
+                    "user": {
+                        "id": request.user.id,
+                        "name": f"{request.user.first_name} {request.user.second_name}",
+                        "email": request.user.email,
+                    },
+                },
+                status=status.HTTP_200_OK,
+            )
+        return Response({"isAuthenticated": False}, status=status.HTTP_200_OK)
+
+
 class LoginView(APIView):
     """
     API view for user login. Returns JWT tokens as cookies.
     """
 
     def post(self, request, *args, **kwargs):
-        email = request.data.get('email')
-        password = request.data.get('password')
-        clinic_id = request.data.get('clinic_id')
+        email = request.data.get("email")
+        password = request.data.get("password")
+        clinic_id = request.data.get("clinic_id")
 
         # Validate input
         if not all([email, password, clinic_id]):
             raise ValidationError("Email, password, and clinic ID are required.")
 
-        # Authenticate user
         try:
             user = User.objects.get(email=email, clinic_id=clinic_id)
         except User.DoesNotExist:
@@ -103,7 +150,8 @@ class LoginView(APIView):
 
         # Generate JWT tokens
         refresh = RefreshToken.for_user(user)
-        access_token = refresh.access_token
+        access_token = str(refresh.access_token)
+        refresh_token = str(refresh)
 
         # Prepare response
         response = Response(
@@ -112,8 +160,7 @@ class LoginView(APIView):
                 'clinic_id': user.clinic_id,
                 "refresh": str(refresh),
                 "access": str(access_token),
-            },
-            status=status.HTTP_200_OK
+            }
         )
 
         # Set cookies with tokens
@@ -157,7 +204,7 @@ class CheckSessionView(APIView):
 
 class LogoutView(APIView):
     """
-    API view for user logout.
+    API view for user logout. Invalidates the refresh token.
     """
 
     def post(self, request, *args, **kwargs):

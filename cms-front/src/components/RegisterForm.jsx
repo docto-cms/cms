@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { postData } from '../API/Axios'; // Adjust the import path accordingly
+import axios from 'axios';
 
 export default function RegisterForm() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     first_name: '',
-    second_name: '',
+    last_name: '',
     clinic_id: '',
     phone_number: '',
     email: '',
@@ -39,19 +39,20 @@ export default function RegisterForm() {
     return Object.keys(newErrors).length === 0;
   };
   console.log('formData:',formData);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (validateForm()) {
       try {
-        const response = await postData('register', formData);
+        const response = await axios.post('http://127.0.0.1:8000/register/', formData);
         setMessage('Registration successful!');
         console.log('Response from backend:', response);
 
         // Reset form
         setFormData({
           first_name: '',
-          second_name: '',
+          last_name: '',
           clinic_id: '',
           phone_number: '',
           email: '',
@@ -97,7 +98,7 @@ export default function RegisterForm() {
             <label className="block text-sm font-medium text-gray-700">Second Name</label>
             <input
               type="text"
-              name="second_name"
+              name="last_name"
               value={formData.second_name}
               onChange={handleChange}
               className="mt-1 p-2 border border-gray-300 rounded w-full"

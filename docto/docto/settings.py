@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -58,13 +59,16 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
 ]
 CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5175",  # Allow frontend access
     "http://localhost:5173",  # Allow frontend access
+    "http://localhost:5174",  # Allow frontend access
 ]
-
+CSRF_TRUSTED_ORIGINS = ["http://localhost:5174"]
 CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins
 CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"]
 CORS_ALLOW_HEADERS = ["*"]  # Allow all headers
-
+CORS_ALLOW_CREDENTIALS = True  # Allow credentials (cookies)
+SESSION_COOKIE_SECURE = True  
 
 ROOT_URLCONF = 'docto.urls'
 
@@ -117,11 +121,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-}
+
 
 
 # Internationalization
