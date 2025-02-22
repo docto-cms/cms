@@ -10,7 +10,6 @@ from django.utils.timezone import is_naive, make_aware
 from datetime import timedelta
 from django.db.models import Q
 from django.utils.timezone import now
-
 class AppointmentMobileAPIView(APIView):
 
     def get(self, request, appointment_id=None):
@@ -65,7 +64,9 @@ class AppointmentMobileAPIView(APIView):
 
                 appointment_end_time = appointment_date + timedelta(minutes=duration)
 
-                overlapping_doctor = Appointments.objects.filter(
+                statusError = Appointments.objects.filter(status__in=['Scheduled', 'Waiting', 'Engaged'])
+
+                overlapping_doctor = statusError.filter(
                     Doctor=doctor_instance,
                     Date__lt=appointment_end_time,
                     Date__gte=appointment_date - timedelta(minutes=(duration - 1))
@@ -86,7 +87,7 @@ class AppointmentMobileAPIView(APIView):
                     },
                 )
 
-                overlapping_patient = Appointments.objects.filter(
+                overlapping_patient = statusError.filter(
                     Patient=patient,
                     Date__lt=appointment_end_time,
                     Date__gte=appointment_date - timedelta(minutes=(duration - 1))
@@ -232,14 +233,14 @@ class AppointmentAPIView(APIView):
             },
         )
 
-        overlapping_patient = Appointments.objects.filter(
+        overlapping_patient = statusError.filter(
             Patient=patient_instance
         ).filter(
             Q(Date__lt=appointment_end_time, Date__gte=appointment_date) | 
             Q(Date__lte=appointment_date, Date__gt=appointment_date)
         )
 
-        overlapping_patient = Appointments.objects.filter(
+        overlapping_patient = statusError.filter(
             Patient=patient_instance
         ).filter(
             Date__lt=appointment_end_time,
@@ -435,7 +436,7 @@ class UpcomingAppointmentsWeek(APIView):
     def get(self, request):
         today = now().date()
         next_week = today + timedelta(days=7)
-        appointments = Appointments.objects.filter(Date__date__range=[today, next_week])
+        appointments = Appointments.objects.filter(Date__date__range=[today, next_week],status__in=['Scheduled', 'Waiting', 'Engaged'])
         serializer = AppointmentGetSerializer(appointments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

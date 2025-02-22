@@ -1,6 +1,6 @@
 import { useState } from "react";
 import React from "react";
-import { useNavigate} from "react-router-dom";
+import { Link, useNavigate} from "react-router-dom";
 
 
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai"; // Import React Icons
@@ -73,6 +73,7 @@ export default function LoginForm() {
         // Store tokens in localStorage (or secure storage)
         localStorage.setItem("access_token", response.data.access);
         localStorage.setItem("refresh_token", response.data.refresh);
+        localStorage.setItem("clinic_id",response.data.clinic_id)
 
         // Optionally, store tokens in memory (if using state)
       
@@ -171,7 +172,10 @@ export default function LoginForm() {
             className="mt-1 p-2 border border-gray-300 rounded w-full"
             required
           />
-      
+        <div className="flex justify-between items-center mt-2">
+          <Link to="/register" className="text-blue-500 hover:underline">Register</Link>
+          <Link to="/forgot-password" className="text-blue-500 hover:underline">Forgot Password</Link>
+        </div>
           {errors.clinic_id && <p className="text-red-500 text-sm mt-1">{errors.clinic_id}</p>}
         </div>
 

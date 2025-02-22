@@ -9,10 +9,11 @@ class User(AbstractUser):
     clinic_id = models.CharField(max_length=20, unique=True)
     phone_number = models.CharField(max_length=15, unique=True)
     email = models.EmailField(unique=True)
-
+    
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+    
 class OtpToken(models.Model):
     email = models.EmailField(unique=True)  # OTP is linked to email, not user
     otp_code = models.CharField(max_length=6, default=generate_otp)  # Use function instead of lambda

@@ -54,7 +54,7 @@ export default function Sidebar1() {
           <Menu className="text-black">
             {[
               { name: "Dashboard", icon: <FaHome />, path: "/" },
-              { name: "Today Patient", icon: <FaUserCheck />, path: "/today-patient" },
+              { name: "Today Appointment", icon: <FaUserCheck />, path: "/today-patient" },
               { name: "Add Patients", icon: <FaUserPlus />, path: "/add-patients" },
               { name: "Quick Entry", icon: <FaUsers />, path: "/quick-entry" },
               { name: "Search Patient", icon: <FaSearch />, path: "/search-patient" },
