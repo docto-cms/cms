@@ -1,6 +1,7 @@
 import { useState } from "react";
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate} from "react-router-dom";
+
 
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai"; // Import React Icons
 import axios from "axios";
@@ -170,6 +171,7 @@ export default function LoginForm() {
             className="mt-1 p-2 border border-gray-300 rounded w-full"
             required
           />
+      
           {errors.clinic_id && <p className="text-red-500 text-sm mt-1">{errors.clinic_id}</p>}
         </div>
 
