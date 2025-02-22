@@ -122,7 +122,7 @@ export default function TodayPatient() {
   }
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
+    <div className="p-6 min-h-screen">
       {/* Header */}
       <div className="bg-white p-4 rounded-lg shadow-md">
         <h1 className="text-2xl font-semibold text-gray-700">Patients</h1>

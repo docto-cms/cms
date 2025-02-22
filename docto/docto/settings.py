@@ -66,9 +66,19 @@ CORS_ALLOWED_ORIGINS = [
 CSRF_TRUSTED_ORIGINS = ["http://localhost:5174"]
 CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins
 CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"]
-CORS_ALLOW_HEADERS = ["*"]  # Allow all headers
+
 CORS_ALLOW_CREDENTIALS = True  # Allow credentials (cookies)
 SESSION_COOKIE_SECURE = True  
+
+CORS_ALLOW_HEADERS = [
+    "authorization",
+    "content-type",
+    "x-csrftoken",
+    "accept",
+    "origin",
+    "user-agent",
+    "x-requested-with",
+]
 
 ROOT_URLCONF = 'docto.urls'
 

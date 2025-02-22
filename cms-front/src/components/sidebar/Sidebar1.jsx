@@ -23,9 +23,7 @@ export default function Sidebar1() {
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
-  const hi = sessionStorage.getItem('hello')
-  console.log(hi);
-
+ 
   return (
     <div className="flex font-poppins">
       {/* Sidebar */}
@@ -46,12 +44,8 @@ export default function Sidebar1() {
             </div>
             {SidebarOpen && (
               <>
-                <h2 className="mt-4 text-center text-sm font-extrabold">
-                  Dr Muhammed Iqbal VM
-                </h2>
-                <p className="text-center text-xs text-gray-200 font-bold">
-                  Cochin
-                </p>
+               
+               
               </>
             )}
           </div>

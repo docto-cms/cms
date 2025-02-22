@@ -75,8 +75,8 @@ export default function WithPatient() {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <div className="bg-white shadow-2xl p-8 w-full max-w-4xl">
+    <div className="flex  items-center h-screen ">
+      <div className="bg-white shadow-2xl p-8 w-full ">
         <div className="flex gap-8 mb-6">
           <button
             type="button"

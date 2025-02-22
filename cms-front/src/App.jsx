@@ -14,32 +14,32 @@ import AddAppointmentPage from "./pages/AddAppointmentPage";
 import SearchPatientPage from "./pages/SearchPatientPage";
 import DoctorProfile from "./components/DoctorProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
+import SupportPage from "./pages/SupportPage";
+import ForgotPassword from "./pages/ForgotPassword";
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* 🔓 Public Routes (No Sidebar) */}
+  
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/Forgot-password" element={<ForgotPassword />} />
 
-        {/* 🔒 Protected Routes (With Sidebar) */}
+
         <Route element={<ProtectedRoute />}>
-          <Route  element={<Sidebar1 /> }>
+          <Route element={<Sidebar1 />}>
             <Route index element={<Dashboard />} />{" "}
-            {/* Default route inside Sidebar */}
             <Route path="quick-entry" element={<QuickEntrypage />} />
             <Route path="appointments" element={<AppointmentDashboard />} />
-            <Route
-              path="website-appointment"
-              element={<WebsiteAppointmentpage />}
-            />
+            <Route path="website-appointment" element={<WebsiteAppointmentpage />} />
             <Route path="add-patients" element={<AddPatientPage />} />
             <Route path="today-patient" element={<TodayPatientpage />} />
             <Route path="total-appointments" element={<TotalAppointment />} />
             <Route path="add-appointment" element={<AddAppointmentPage />} />
             <Route path="search-patient" element={<SearchPatientPage />} />
             <Route path="doctor-profile" element={<DoctorProfile />} />
+            <Route path="support" element={<SupportPage />} />
             <Route path="*" element={<h1>Not Found</h1>} />
           </Route>
         </Route>
