@@ -61,7 +61,7 @@ export default function Navbar({ toggleSidebar, SidebarOpen }) {
     if (item === "My Profile") {
       navigate("/doctor-profile");
     } else if (item === "Change Password") {
-      navigate("/change-password");
+      navigate("/Forgot-password");
     } else if (item === "Sign Out") {
       handleLogout(); // ✅ Call logout function
     }

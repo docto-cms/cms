@@ -74,7 +74,7 @@ export default function AppointmentGraph() {
 
   return (
     <div
-      className="p-4 bg-white rounded shadow-md w-full h-[500px] my-8"
+      className="p-4 bg-white rounded shadow-md w-[50%] h-[500px] my-8"
       style={{
         boxShadow: '0 3px 6px rgba(0, 0, 0, 0.1), 0 -3px 6px rgba(0, 0, 0, 0.05)',
       }}
@@ -83,3 +83,5 @@ export default function AppointmentGraph() {
     </div>
   );
 }
+
+

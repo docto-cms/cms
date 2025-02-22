@@ -70,8 +70,8 @@ export default function LoginForm() {
         console.log("Response from backend:", response);
 
         // Store tokens in localStorage (or secure storage)
-        localStorage.setItem("access_token", response.data.access_token);
-        localStorage.setItem("refresh_token", response.data.refresh_token);
+        localStorage.setItem("access_token", response.data.access);
+        localStorage.setItem("refresh_token", response.data.refresh);
 
         // Optionally, store tokens in memory (if using state)
       
@@ -106,12 +106,12 @@ export default function LoginForm() {
     }
 };
   return (
-    <div className="flex ml-36 items-center h-screen my-20">
+    <div className="flex ml-36 items-center h-screen ">
       <form
         onSubmit={handleSubmit}
         className="bg-white p-6 rounded-2xl shadow-md w-96 space-y-4"
       >
-        <label className="text-2xl text-center font-bold mb-4 block">
+        <label className="text-bold text-center font-bold mb-4 block font-poppins">
           Let’s get started
         </label>
 

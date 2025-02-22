@@ -7,39 +7,36 @@ const ProtectedRoute = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem("access_token"); // Retrieve token from local storage
-  
-      if (!token) {
-          console.error("No token found!");
-          return false;
-      }
-      console.log("Token found:", token);
-      
-  
-      try {
-          const response = await axios.get("http://127.0.0.1:8000/session/", {
-              headers: {
-                  Authorization: `Bearer ${token}`,  // Send token in Authorization header
-              },
-          });
-  
-          console.log("Authenticated:", response.data);
-          return true;
-      } catch (error) {
-          console.error("Authentication check failed:", error);
-          return false;
-      }
-  };
+      const token = localStorage.getItem("access_token"); // ✅ Only using access token
 
-    checkAuth(); // Call the function to check authentication
+      if (!token) {
+        console.error("No access token found!");
+        setIsAuthenticated(false);
+        return;
+      }
+
+      try {
+        const response = await axios.get("http://127.0.0.1:8000/session/", {
+          headers: {
+            Authorization: `Bearer ${token}`, // ✅ Only sending the access token
+          },
+        });
+
+        console.log("Authenticated:", response.data);
+        setIsAuthenticated(response.data.isAuthenticated);
+      } catch (error) {
+        console.error("Authentication check failed:", error);
+        setIsAuthenticated(false);
+      }
+    };
+
+    checkAuth();
   }, []);
 
-  // ✅ Show a loader while checking authentication status
   if (isAuthenticated === null) {
     return <p>Loading...</p>;
   }
 
-  // ✅ Render the protected route if authenticated, otherwise redirect to login
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" />;
 };
 
