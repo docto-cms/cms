@@ -38,7 +38,6 @@ export default function RegisterForm() {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  console.log('formData:',formData);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,9 +46,7 @@ export default function RegisterForm() {
       try {
         const response = await axios.post('http://127.0.0.1:8000/register/', formData);
         setMessage('Registration successful!');
-        console.log('Response from backend:', response);
 
-        // Reset form
         setFormData({
           first_name: '',
           last_name: '',
@@ -59,7 +56,6 @@ export default function RegisterForm() {
           password: '',
           confirm_password: '',
         });
-    
 
         setTimeout(() => {
           navigate('/login');
@@ -74,14 +70,14 @@ export default function RegisterForm() {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen my-20">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 ">
       <form
         onSubmit={handleSubmit}
-        className="bg-white shadow-lg rounded-lg w-[500px] p-8"
+        className="bg-white shadow-lg rounded-lg max-w-md w-full p-6 overflow-auto"
       >
         <h1 className="text-2xl text-center font-bold mb-4">Registration</h1>
         {message && <p className="text-center text-green-500 mb-4">{message}</p>}
-        <div className="grid gap-6 mb-6">
+        <div className="grid gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">First Name</label>
             <input
@@ -95,18 +91,16 @@ export default function RegisterForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Second Name</label>
+            <label className="block text-sm font-medium text-gray-700">Last Name</label>
             <input
               type="text"
               name="last_name"
-              value={formData.second_name}
+              value={formData.last_name}
               onChange={handleChange}
               className="mt-1 p-2 border border-gray-300 rounded w-full"
             />
           </div>
-        </div>
 
-        <div className="grid gap-6 mb-6">
           <div>
             <label className="block text-sm font-medium text-gray-700">Clinic ID</label>
             <input

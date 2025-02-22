@@ -2,6 +2,7 @@ import React ,{useState,useEffect} from 'react'
 
 export default function DoctorProfile() {
   const [doctor, setDoctor] = useState("");
+  const clinic_id = localStorage.getItem("clinic_id")
 
   useEffect(() => {
     fetch(`http://127.0.0.1:8000/Doctorget/${clinic_id}/`) // Update API URL if needed
@@ -36,7 +37,7 @@ export default function DoctorProfile() {
           </label>
           <input
             type="text"
-            value={doctor.second_name}
+            value={doctor.last_name}
             className="w-full py-3 px-2 border border-gray rounded-md focus:ring focus:ring-blue-200"
           
           />

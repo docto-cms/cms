@@ -10,7 +10,6 @@ from django.utils.timezone import is_naive, make_aware
 from datetime import timedelta
 from django.db.models import Q
 from django.utils.timezone import now
-
 class AppointmentMobileAPIView(APIView):
 
     def get(self, request, appointment_id=None):

@@ -88,7 +88,7 @@ export default function Navbar({ toggleSidebar, SidebarOpen }) {
         />
         {isMenuOpen && (
           <div className="absolute right-0 top-12 w-48 bg-white shadow-lg rounded-lg py-2 z-50">
-            {["My Profile", "Change Password", "Sign Out"].map((item) => (
+            {["My Profile", "Sign Out"].map((item) => (
               <div
                 key={item}
                 onClick={() => handleMenuClick(item)}
