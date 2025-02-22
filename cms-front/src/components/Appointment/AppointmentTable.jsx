@@ -49,7 +49,10 @@ export default function AppointmentTable({ id }) {
         .length,
       Engaged: data.filter((a) => a.status === "Engaged" && a.Doctor === id)
         .length,
-      Done: data.filter((a) => a.status === "Done" && a.Doctor === id).length,
+      Done: data.filter((a) => a.status === "Done" && a.Doctor === id)
+      .length,
+      Canceled: data.filter((a) => a.status === "Canceled" && a.Doctor === id)
+      .length,
     });
   }, [data, id]);
 
@@ -119,6 +122,12 @@ export default function AppointmentTable({ id }) {
           >
             Done <h1>{countSetter.Done}</h1>
           </div>
+          <div
+            className="flex-1 text-center p-1 border border-gray-700 cursor-pointer bg-red-500 text-white"
+            onClick={() => handleClick("Canceled")}
+          >
+            Canceled <h1>{countSetter.Canceled}</h1>
+          </div>
         </div>
 
         {filteredAppointments.map((appointment) => (
@@ -128,14 +137,17 @@ export default function AppointmentTable({ id }) {
           >
             <div className="flex flex-col-3 justify-center w-full items-center ">
               <p className="text-gray-800 flex items-center">
-                <span className="text-sm">{formatDate(appointment.data)}</span>
+                <span className="text-sm">{formatDate(appointment.Date)}</span>
+                
               </p>
             </div>
 
             <div className="flex flex-col w-full">
-  <h3 className="text-gray-800 font-bold">{appointment.PatientName}</h3>
-  <p className="text-gray-600">{appointment.Treatment}</p>
-</div>
+              <h3 className="text-gray-800 font-bold">
+                {appointment.PatientName}
+              </h3>
+              <p className="text-gray-600">{appointment.Treatment}</p>
+            </div>
 
             <div className="flex space-x-2 w-full justify-center">
               {appointment.status === "Scheduled" && (
