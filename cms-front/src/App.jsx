@@ -27,7 +27,6 @@ function App() {
         <Route path="/Forgot-password" element={<ForgotPassword />} />
 
 
-        <Route element={<ProtectedRoute />}>
           <Route element={<Sidebar1 />}>
             <Route index element={<Dashboard />} />{" "}
             <Route path="quick-entry" element={<QuickEntrypage />} />
@@ -41,7 +40,6 @@ function App() {
             <Route path="doctor-profile" element={<DoctorProfile />} />
             <Route path="support" element={<SupportPage />} />
             <Route path="*" element={<h1>Not Found</h1>} />
-          </Route>
         </Route>
       </Routes>
     </Router>
